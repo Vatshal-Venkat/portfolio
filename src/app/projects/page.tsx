@@ -3,25 +3,28 @@ import ProjectCard from "@/components/ProjectCard";
 
 export default function ProjectsPage() {
   return (
-    <div className="py-32">
+    <section className="py-32">
+
       <SectionHeading
-        title="Projects"
-        subtitle="Backend-focused AI systems and full-stack platforms built for real-world complexity."
+        title="Selected Projects"
+        subtitle="Production-focused AI systems and full-stack platforms built for real-world complexity."
       />
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-10">
+
         <ProjectCard
           title="Online Examination System"
-          description="Full-stack exam platform with dynamic question engine, result analytics, leaderboard system and anti-cheating mechanisms."
+          description="Full-stack intelligent exam engine with analytics, leaderboard ranking, anti-cheating mechanisms and scalable backend APIs."
           href="/projects/online_exam"
         />
 
         <ProjectCard
           title="RAG Agent System"
-          description="Retrieval-Augmented Generation system with vector search, embeddings pipeline and production-ready backend APIs."
+          description="End-to-end Retrieval-Augmented Generation system with embeddings pipeline, vector search and production-ready FastAPI backend."
           href="/projects/rag_agent"
         />
+
       </div>
-    </div>
+    </section>
   );
 }

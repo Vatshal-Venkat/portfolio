@@ -14,12 +14,19 @@ export default function ProjectCard({
   return (
     <Link
       href={href}
-      className="block p-6 border border-gray-800 rounded-lg hover:border-gray-600 transition"
+      className="bg-secondary border border-subtle rounded-xl p-8 card-glow block"
     >
-      <h3 className="text-xl font-semibold mb-3">{title}</h3>
-      <p className="text-gray-400 text-sm leading-relaxed">
-        {description}
-      </p>
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold">{title}</h3>
+
+        <p className="text-secondary text-sm leading-relaxed">
+          {description}
+        </p>
+
+        <span className="text-sm text-blue-500 font-medium">
+          View Details →
+        </span>
+      </div>
     </Link>
   );
 }

@@ -8,7 +8,7 @@ export default function TechStack({ stack }: TechStackProps) {
       {stack.map((tech, index) => (
         <span
           key={index}
-          className="px-3 py-1 text-xs border border-gray-700 rounded-md text-gray-300"
+          className="px-4 py-1.5 text-xs rounded-md bg-secondary border border-subtle text-secondary"
         >
           {tech}
         </span>

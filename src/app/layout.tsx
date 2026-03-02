@@ -11,9 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Vatshal | Applied AI Engineer",
+  title: "Vatshal | AI Full Stack Engineer",
   description:
-    "Applied AI Engineer building LLM systems, RAG pipelines and intelligent platforms.",
+    "AI Full Stack Engineer building production-grade LLM systems, RAG pipelines, graph intelligence and scalable AI infrastructure.",
 };
 
 export default function RootLayout({
@@ -23,19 +23,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body className="bg-[#0B0D12] text-gray-100 antialiased">
-
+      <body className="bg-primary text-primary antialiased">
         <Navbar />
 
-        {/* Main Content */}
-        <main className="pt-16">
-          <div className="container-custom">
-            {children}
-          </div>
+        <main className="pt-24">
+          <div className="layout-container">{children}</div>
         </main>
 
         <Footer />
-
       </body>
     </html>
   );
