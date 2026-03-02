@@ -89,3 +89,23 @@ body {
   border-color: #374151;
   color: white;
 }
+
+@keyframes mesh1 {
+  0% { transform: translate(-20%, -10%) scale(1); }
+  50% { transform: translate(-10%, 10%) scale(1.1); }
+  100% { transform: translate(-20%, -10%) scale(1); }
+}
+
+@keyframes mesh2 {
+  0% { transform: translate(20%, 0%) scale(1); }
+  50% { transform: translate(10%, -10%) scale(1.05); }
+  100% { transform: translate(20%, 0%) scale(1); }
+}
+
+.animate-mesh1 {
+  animation: mesh1 18s ease-in-out infinite;
+}
+
+.animate-mesh2 {
+  animation: mesh2 22s ease-in-out infinite;
+}

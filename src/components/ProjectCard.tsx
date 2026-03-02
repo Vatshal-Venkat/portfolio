@@ -1,32 +1,24 @@
+"use client";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
-interface ProjectCardProps {
-  title: string;
-  description: string;
-  href: string;
-}
-
-export default function ProjectCard({
-  title,
-  description,
-  href,
-}: ProjectCardProps) {
+export default function ProjectCard({ title, description, href }: any) {
   return (
-    <Link
-      href={href}
-      className="bg-secondary border border-subtle rounded-xl p-8 card-glow block"
+    <motion.div
+      initial={{ opacity: 0, y: 60 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
     >
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">{title}</h3>
-
-        <p className="text-secondary text-sm leading-relaxed">
+      <Link
+        href={href}
+        className="bg-[#111827] border border-gray-800 rounded-xl p-8 hover:border-gray-600 transition block"
+      >
+        <h3 className="text-xl font-semibold mb-4">{title}</h3>
+        <p className="text-gray-400 text-sm leading-relaxed">
           {description}
         </p>
-
-        <span className="text-sm text-blue-500 font-medium">
-          View Details →
-        </span>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   );
 }
