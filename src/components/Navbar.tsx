@@ -12,10 +12,10 @@ export default function Navbar() {
                 </div>
 
                 <nav className="flex items-center gap-8 text-sm text-gray-400">
-                    <a className="hover:text-white transition">About</a>
-                    <a className="hover:text-white transition">Projects</a>
-                    <a className="hover:text-white transition">Experience</a>
-                    <a className="hover:text-white transition">Contact</a>
+                    <Link href="/" className="hover:text-white transition">About</Link>
+                    <Link href="/projects" className="hover:text-white transition">Projects</Link>
+                    <Link href="/resume" className="hover:text-white transition">Experience</Link>
+                    <Link href="/contact" className="hover:text-white transition">Contact</Link>
                 </nav>
 
             </div>

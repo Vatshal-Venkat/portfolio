@@ -13,9 +13,9 @@ export default function Hero() {
                     </h1>
 
                     <p className="mt-6 text-gray-400 text-lg leading-relaxed">
-                        I build production-grade AI systems — from Retrieval-Augmented
-                        Generation pipelines and vector search architectures to intelligent
-                        risk intelligence platforms.
+                        I design and ship end-to-end AI systems — backend APIs, vector search pipelines,
+                        graph intelligence layers, and scalable ML infrastructure.
+                        Focused on turning complex data into production-ready intelligence platforms.
                     </p>
 
                     <div className="mt-10 flex items-center gap-4">
