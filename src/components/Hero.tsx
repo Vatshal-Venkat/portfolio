@@ -48,7 +48,7 @@ export default function Hero() {
             </div>
 
             <div className="absolute top-16 right-6 md:top-20 md:right-8 z-40 text-[8px] text-white/60 tracking-[0.2em] uppercase">
-                PORTFOLIO [2024]
+                PORTFOLIO [2026]
             </div>
 
             {/* Circle Background */}
@@ -86,7 +86,7 @@ export default function Hero() {
 
                 {/* Vertical Year text */}
                 <div className="absolute right-[4%] bottom-[25%] text-white text-[10px] md:text-xs tracking-widest origin-bottom-right -rotate-90">
-                    [2024]
+                    [2005-JAN-21]
                 </div>
             </div>
 
