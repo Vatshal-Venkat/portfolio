@@ -73,29 +73,17 @@ export default function Hero() {
             </div>
 
             {/* BACKGROUND TEXT */}
-            <div className="absolute inset-0 flex flex-col justify-between z-10 pointer-events-none select-none overflow-hidden">
-                {/* VENKAT - Top Half */}
-                <div className="flex-1 flex items-end justify-center pb-8 lg:pb-12">
-                    <motion.h1
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 1, delay: 0.2 }}
-                        className="text-[12vw] font-black text-white leading-none tracking-[0.02em] m-0 uppercase scale-y-110"
-                    >
-                        VENKAT
-                    </motion.h1>
-                </div>
-                {/* VATSHAL - Bottom Half */}
-                <div className="flex-1 flex items-start justify-center pt-8 lg:pt-12">
-                    <motion.h1
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 1, delay: 0.3 }}
-                        className="text-[12vw] font-black text-white leading-none tracking-[0.02em] m-0 uppercase scale-y-110"
-                    >
-                        VATSHAL
-                    </motion.h1>
-                </div>
+            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none overflow-hidden h-full">
+                {/* VATSHAL - Centered */}
+                <motion.h1
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.3 }}
+                    className="text-[16vw] font-black text-white leading-none tracking-[0.02em] m-0 uppercase scale-y-110"
+                >
+                    VATSHAL
+                </motion.h1>
+
                 {/* Vertical Year text */}
                 <div className="absolute right-[4%] bottom-[25%] text-white text-[10px] md:text-xs tracking-widest origin-bottom-right -rotate-90">
                     [2024]
@@ -111,7 +99,7 @@ export default function Hero() {
             >
                 <div className="relative w-full h-full">
                     <Image
-                        src="/vatshal.png"
+                        src="/Vatshal1.png"
                         alt="Venkat Vatshal"
                         fill
                         priority
@@ -132,40 +120,45 @@ export default function Hero() {
                 </div>
             </div>
 
-            {/* BOTTOM LEFT STORY / INFO - Moved to left corner and adjusted width */}
+            {/* BOTTOM LEFT STORY / INFO - Firmly anchored to bottom-left */}
             <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                className="absolute bottom-6 left-6 md:bottom-10 md:left-8 max-w-[180px] md:max-w-[220px] lg:max-w-[260px] z-40 bg-black/40 backdrop-blur-sm p-4 rounded-xl border border-white/5"
+                className="absolute bottom-4 left-4 md:bottom-8 md:left-8 max-w-[150px] md:max-w-[190px] lg:max-w-[220px] z-50 pointer-events-none"
             >
-                <div className="flex items-center gap-2 mb-3 text-[#B38B71] text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase">
-                    <span className="w-4 h-4 rounded-full border border-[#B38B71] flex items-center justify-center text-[7px] shrink-0">V</span>
-                    <span className="truncate">VENKAT VATSHAL — STORY</span>
+                <div className="flex items-center gap-2 mb-2 text-[#B38B71] text-[6px] md:text-[8px] font-bold tracking-[0.2em] uppercase">
+                    <span className="w-3 h-3 md:w-4 md:h-4 rounded-full border border-[#B38B71] flex items-center justify-center text-[5px] md:text-[6px] shrink-0">V</span>
+                    <span className="truncate">VENKAT VATSHAL</span>
                 </div>
-                <p className="text-white/60 text-[9px] md:text-[11px] leading-relaxed font-semibold tracking-wide">
-                    <span className="text-white font-bold">PART I. &mdash;</span> Building intelligent systems for real-world deployment.
+                <p className="text-white/60 text-[7px] md:text-[9px] leading-relaxed font-semibold tracking-wider text-justify">
+                    Building intelligent systems for real-world deployment.
                     Specializing in vector search pipelines, and scalable AI infrastructure.
                 </p>
             </motion.div>
 
-            {/* BOTTOM RIGHT BUTTON */}
+            {/* BOTTOM RIGHT ACTIONS */}
             <motion.div
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                className="absolute bottom-6 right-6 md:bottom-10 md:right-8 z-40 flex items-center gap-4 md:gap-6"
+                className="absolute bottom-10 right-4 md:bottom-12 md:right-12 z-[100] flex items-center gap-3 md:gap-4"
             >
-                <a href="#about" className="px-5 py-2 md:px-6 md:py-2.5 rounded-full border border-white/40 text-white font-bold tracking-widest text-[9px] md:text-[10px] hover:bg-white hover:text-black hover:border-white transition-all whitespace-nowrap flex items-center gap-2 group">
-                    EXPLORE NOW
-                    <span className="text-current transition-transform group-hover:translate-x-1">&gt;</span>
+                {/* The 'BOOK NOW' equivalent button renamed to 'RESUME' */}
+                <a href="/resume.pdf" target="_blank" className="px-5 py-2.5 md:px-6 md:py-3 rounded-full border-2 border-white text-white font-bold tracking-widest text-[10px] md:text-[11px] hover:bg-white hover:text-black transition-all whitespace-nowrap flex items-center gap-2 group bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.15)] pointer-events-auto">
+                    RESUME
+                    <span className="text-current transition-transform group-hover:translate-x-1 font-black">&gt;</span>
                 </a>
-                <div className="hidden lg:flex w-14 h-14 md:w-16 md:h-16 rounded-full border border-[#B38B71]/50 items-center justify-center relative overflow-hidden group cursor-pointer bg-black/50 backdrop-blur-md hover:border-[#B38B71] transition-colors">
-                    <div className="absolute inset-[15%] rounded-full border border-[#B38B71]/30 group-hover:rotate-90 transition-transform duration-700"></div>
-                    <div className="absolute inset-x-0 h-[1px] bg-[#B38B71]/80 rotate-45 z-0"></div>
-                    <div className="absolute inset-x-0 h-[1px] bg-[#B38B71]/80 -rotate-45 z-0"></div>
-                    <span className="text-white font-black text-[9px] md:text-[10px] relative z-10 uppercase tracking-widest drop-shadow-md">
-                        hire
+
+                {/* The circular 'IMAX/DEADPOOL' equivalent ticket badge */}
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-white/30 items-center justify-center relative overflow-hidden flex bg-black/80 backdrop-blur-xl cursor-pointer hover:border-white transition-colors group shadow-[0_0_15px_rgba(0,0,0,0.8)] pointer-events-auto">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                        <div className="w-full h-[2px] bg-[#B38B71] rotate-45"></div>
+                        <div className="w-full h-[2px] bg-[#B38B71] -rotate-45 absolute"></div>
+                        <div className="w-[2px] h-full bg-[#B38B71] rotate-12 absolute"></div>
+                    </div>
+                    <span className="text-white font-black text-[8px] md:text-[10px] relative z-10 leading-none text-center -rotate-12 italic tracking-tighter drop-shadow-md">
+                        VAT<br />SHAL
                     </span>
                 </div>
             </motion.div>
