@@ -6,9 +6,10 @@ interface ProjectCardProps {
   title: string;
   description: string;
   href: string;
+  techStack?: string[];
 }
 
-export default function ProjectCard({ title, description, href }: ProjectCardProps) {
+export default function ProjectCard({ title, description, href, techStack }: ProjectCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 60 }}
@@ -29,6 +30,17 @@ export default function ProjectCard({ title, description, href }: ProjectCardPro
           <p className="text-white/50 text-sm md:text-base leading-relaxed flex-grow">
             {description}
           </p>
+
+          {techStack && techStack.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-6">
+              {techStack.map((tech, i) => (
+                <span key={i} className="text-[10px] md:text-xs font-medium px-3 py-1 rounded-full bg-white/5 text-white/70 border border-white/10 group-hover:border-[#B38B71]/30 transition-colors">
+                  {tech}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="mt-8 flex items-center text-[#B38B71] text-xs tracking-[0.2em] uppercase font-bold">
             <span className="group-hover:mr-3 transition-all duration-300">Explore</span>
             <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0">→</span>
