@@ -28,10 +28,7 @@ export default function Home() {
       {/* 
         PROJECTS SECTION
       */}
-      <section id="projects" className="min-h-screen py-32 flex flex-col items-center justify-center text-white border-t border-white/5 bg-[#020202]">
-        <h2 className="text-[#B38B71] text-xs font-bold tracking-[0.3em] uppercase mb-16">Part III. — Selected Works</h2>
-        <ProjectsGrid />
-      </section>
+      <ProjectsGrid />
 
       {/*
         EXPERIENCE SECTION

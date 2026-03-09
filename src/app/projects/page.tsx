@@ -13,12 +13,14 @@ export default function ProjectsPage() {
       <div className="grid md:grid-cols-2 gap-10">
 
         <ProjectCard
+          index={0}
           title="Online Examination System"
           description="Full-stack intelligent exam engine with analytics, leaderboard ranking, anti-cheating mechanisms and scalable backend APIs."
           href="/projects/online_exam"
         />
 
         <ProjectCard
+          index={1}
           title="RAG Agent System"
           description="End-to-end Retrieval-Augmented Generation system with embeddings pipeline, vector search and production-ready FastAPI backend."
           href="/projects/rag_agent"
