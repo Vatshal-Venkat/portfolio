@@ -68,8 +68,8 @@ export default function ProjectsGrid() {
                     </p>
                 </motion.div>
 
-                {/* PROJECT LIST */}
-                <div className="flex flex-col gap-32 md:gap-48 lg:gap-64">
+                {/* PROJECT LIST - ETHEREAL FLOW */}
+                <div className="flex flex-col gap-24 md:gap-40 lg:gap-56">
                     {projects.map((project, index) => (
                         <ProjectCard
                             key={index}
@@ -82,20 +82,20 @@ export default function ProjectsGrid() {
                     ))}
                 </div>
 
-                {/* CINEMATIC FOOTER */}
+                {/* CINEMATIC FOOTER - MINIMALIST */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1.5, delay: 0.3 }}
-                    className="mt-48 flex flex-col items-center"
+                    className="mt-32 flex flex-col items-center"
                 >
                     <div className="flex items-center gap-8 mb-4">
-                        <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                        <span className="text-white/10 text-[10px] tracking-[0.8em] uppercase font-black">
-                            Exploring Depth
+                        <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                        <span className="text-white/5 text-[10px] tracking-[0.8em] uppercase font-black">
+                            End of Reflection
                         </span>
-                        <div className="w-20 h-[1px] bg-gradient-to-l from-transparent via-white/10 to-transparent" />
+                        <div className="w-16 h-[1px] bg-gradient-to-l from-transparent via-white/5 to-transparent" />
                     </div>
                 </motion.div>
             </div>
