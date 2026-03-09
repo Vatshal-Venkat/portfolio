@@ -43,59 +43,59 @@ export default function ProjectsPage() {
         </span>
       </div>
 
-      <div className="relative z-10 max-w-[1500px] mx-auto px-8 md:px-16">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16">
 
-        {/* Header */}
+        {/* Header Section */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="mb-28"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-32 md:mb-48"
         >
           <div className="flex items-center gap-4 mb-8">
             <div className="w-14 h-[2px] bg-gradient-to-r from-[#B38B71] to-transparent" />
-            <span className="text-[#B38B71] text-xs tracking-[0.35em] uppercase font-semibold">
+            <span className="text-[#B38B71] text-[10px] tracking-[0.5em] uppercase font-black">
               Selected Work
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight">
-            Projects
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1] tracking-tighter mb-8">
+            The Work
             <br />
-            <span className="text-white/20">that define my work.</span>
+            <span className="text-white/20">of a Builder.</span>
           </h1>
 
-          <p className="mt-6 text-white/40 max-w-xl text-base leading-relaxed">
-            A collection of production-grade AI systems and scalable
-            engineering projects built around real-world complexity.
+          <p className="text-white/40 max-w-xl text-base md:text-lg leading-relaxed font-medium tracking-wide">
+            A curated selection of high-impact AI systems, scalable platforms,
+            and technical explorations pushed to the edge.
           </p>
         </motion.div>
 
-        {/* Projects List */}
-        <div className="mt-20">
+        {/* Interactive Projects list */}
+        <div className="flex flex-col gap-32 md:gap-48 lg:gap-64">
           {projects.map((project, i) => (
             <ProjectCard key={i} {...project} index={i} />
           ))}
         </div>
 
-        {/* Footer/More works */}
+        {/* Progressive Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.5, delay: 0.5 }}
-          className="mt-40 mb-20 flex flex-col items-center"
+          transition={{ duration: 1.2, delay: 0.3 }}
+          className="mt-64 pb-32 flex flex-col items-center"
         >
-          <div className="flex items-center gap-8 mb-8">
-            <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-white/10 text-[10px] tracking-[0.6em] uppercase font-black">
-              End of Selection
+          <div className="flex items-center gap-8 mb-6">
+            <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <span className="text-white/10 text-[9px] tracking-[0.8em] uppercase font-black">
+              End of Chapter
             </span>
-            <div className="w-24 h-[1px] bg-gradient-to-l from-transparent via-white/10 to-transparent" />
+            <div className="w-20 h-[1px] bg-gradient-to-l from-transparent via-white/10 to-transparent" />
           </div>
 
-          <p className="text-white/20 text-xs tracking-widest uppercase font-bold">
-            Expanding the horizon soon.
+          <p className="text-white/20 text-[10px] tracking-[0.5em] font-bold uppercase">
+            Expansion in progress.
           </p>
         </motion.div>
 

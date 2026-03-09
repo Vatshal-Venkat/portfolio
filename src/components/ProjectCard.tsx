@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRef } from "react";
 
 interface ProjectCardProps {
   title: string;
@@ -18,9 +19,21 @@ export default function ProjectCard({
   index,
 }: ProjectCardProps) {
   const isEven = index % 2 === 0;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    containerRef.current.style.setProperty("--x", `${x}px`);
+    containerRef.current.style.setProperty("--y", `${y}px`);
+  };
 
   return (
     <motion.div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
       initial={{ opacity: 0, y: 100 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
@@ -30,78 +43,97 @@ export default function ProjectCard({
         ease: [0.16, 1, 0.3, 1],
       }}
       className="group relative"
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        e.currentTarget.style.setProperty("--x", `${x}px`);
-        e.currentTarget.style.setProperty("--y", `${y}px`);
-      }}
     >
-      <Link href={href} className="block relative z-10">
-        <div className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-12 md:gap-24 py-20 px-4 md:px-0`}>
+      <Link href={href} className="block relative z-20 py-20 md:py-32">
+        <div
+          className={`flex flex-col ${isEven ? "md:flex-row" : "md:flex-row-reverse"
+            } items-center gap-16 md:gap-24 lg:gap-32 px-4 md:px-0`}
+        >
+          {/* IMAGE / VISUAL SIDE - "The Glass Canvas" */}
+          <div className="relative w-full md:w-1/2 aspect-[16/10] rounded-2xl overflow-hidden border border-white/[0.08] bg-[#050505] group-hover:border-[#B38B71]/40 transition-all duration-700 shadow-2xl">
+            {/* Cinematic Grid Pattern Overlay */}
+            <div className="absolute inset-0 opacity-[0.03]"
+              style={{ backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`, backgroundSize: '30px 30px' }}
+            />
 
-          {/* Large Index Number Background */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none overflow-hidden h-full w-full flex items-center justify-center opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-1000">
-            <span className="text-[35vw] font-black tracking-tighter leading-none transform group-hover:scale-110 transition-transform duration-[2000ms] ease-out">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-          </div>
+            {/* Dynamic Glow */}
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none"
+              style={{
+                background: `radial-gradient(500px circle at var(--x, 50%) var(--y, 50%), rgba(179,139,113,0.15), transparent 50%)`
+              }}
+            />
 
-          {/* Visual Side (Mockup/Image placeholder) */}
-          <div className="relative w-full md:w-1/2 aspect-[16/10] bg-white/[0.02] border border-white/[0.05] rounded-lg overflow-hidden group-hover:border-[#B38B71]/30 transition-colors duration-700 shadow-2xl">
-            {/* Dynamic Glow Inside */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_var(--x,50%)_var(--y,50%),rgba(179,139,113,0.15),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-
+            {/* Visual Placeholder Label */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white/5 text-[10px] tracking-[0.4em] uppercase font-bold">Concept Visual</span>
+              <span className="text-white/5 text-[9px] tracking-[0.8em] font-black uppercase select-none">
+                Phase {String(index + 1).padStart(2, "0")} / Digital Node
+              </span>
             </div>
 
-            {/* Decorative Corner */}
-            <div className={`absolute ${isEven ? 'bottom-6 right-6' : 'bottom-6 left-6'} w-12 h-12`}>
-              <div className={`absolute bottom-0 ${isEven ? 'right-0' : 'left-0'} w-full h-[1px] bg-gradient-to-r from-transparent via-[#B38B71]/40 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700`} />
-              <div className={`absolute bottom-0 ${isEven ? 'right-0' : 'left-0'} h-full w-[1px] bg-gradient-to-b from-transparent via-[#B38B71]/40 to-transparent transform scale-y-0 group-hover:scale-y-100 transition-transform duration-700`} />
-            </div>
+            {/* Subtle Inner Glow */}
+            <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-b from-[#B38B71]/[0.05] to-transparent" />
           </div>
 
-          {/* Content Side */}
-          <div className={`w-full md:w-1/2 flex flex-col ${isEven ? 'md:items-start' : 'md:items-end text-right'}`}>
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-[#B38B71] text-[10px] font-bold tracking-[0.4em] uppercase">
-                Phase {String(index + 1).padStart(2, "0")}
+          {/* TEXT SIDE */}
+          <div
+            className={`w-full md:w-1/2 flex flex-col ${isEven ? "items-start text-left" : "items-end text-right"
+              }`}
+          >
+            <div className="flex items-center gap-4 mb-8">
+              {!isEven && <div className="w-12 h-[1px] bg-[#B38B71]/20 group-hover:w-20 transition-all duration-700" />}
+              <span className="text-[#B38B71] text-[10px] tracking-[0.5em] uppercase font-black">
+                Sequence {String(index + 1).padStart(2, "0")}
               </span>
-              <div className="w-8 h-[1px] bg-[#B38B71]/30" />
+              {isEven && <div className="w-12 h-[1px] bg-[#B38B71]/20 group-hover:w-20 transition-all duration-700" />}
             </div>
 
-            <h3 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-none tracking-tighter mb-8 group-hover:text-[#B38B71] transition-colors duration-500">
+            <h3 className="text-4xl md:text-5xl lg:text-7xl font-black text-white leading-[1] tracking-tighter mb-8 group-hover:text-[#B38B71] transition-colors duration-500">
               {title}
             </h3>
 
-            <p className={`text-white/40 text-base md:text-lg leading-relaxed mb-10 max-w-md font-medium ${!isEven && 'md:ml-auto'}`}>
+            <p
+              className={`text-white/40 text-base md:text-lg leading-relaxed mb-12 max-w-lg font-medium tracking-wide ${!isEven && "md:ml-auto"
+                }`}
+            >
               {description}
             </p>
 
-            <div className={`flex flex-wrap gap-3 mb-10 ${!isEven && 'justify-end'}`}>
+            {/* Tech Stack Sticker style */}
+            <div
+              className={`flex flex-wrap gap-2 mb-12 ${!isEven && "justify-end"
+                }`}
+            >
               {techStack?.map((tech, i) => (
                 <span
                   key={i}
-                  className="text-[10px] font-bold px-4 py-1.5 rounded-full border border-white/10 text-white/40 uppercase tracking-widest group-hover:border-[#B38B71]/30 group-hover:text-white/70 transition-all duration-500"
+                  className="text-[9px] font-bold px-4 py-2 rounded-full border border-white/10 text-white/40 uppercase tracking-[0.2em] group-hover:border-[#B38B71]/40 group-hover:text-white transition-all duration-500"
                 >
                   {tech}
                 </span>
               ))}
             </div>
 
-            <div className="flex items-center gap-4 text-white/20 group-hover:text-[#B38B71] transition-colors duration-500">
-              <span className="text-[10px] tracking-[0.5em] uppercase font-black">Explore Depth</span>
-              <span className="text-xl transform group-hover:translate-x-2 transition-transform duration-500">→</span>
+            {/* Direct Interaction area */}
+            <div className="flex items-center gap-6 group/cta text-white/30 hover:text-[#B38B71] transition-colors duration-500">
+              <span className="text-[10px] tracking-[0.6em] uppercase font-black">Open Case Study</span>
+              <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover/cta:border-[#B38B71]/50 group-hover/cta:bg-[#B38B71]/10 transition-all duration-500">
+                <span className="text-xl transform group-hover/cta:translate-x-1 group-hover/cta:-translate-y-1 transition-transform duration-500">↗</span>
+              </div>
             </div>
           </div>
         </div>
       </Link>
 
-      {/* Background Separation Line */}
-      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.03] to-transparent" />
+      {/* HUGE BACKGROUND TYPOGRAPHY (The Perspective Element) */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-10 h-full w-full">
+        <span className="text-[45vw] font-black tracking-tighter leading-none text-white opacity-[0.015] translate-y-[-5%] group-hover:opacity-[0.03] transform group-hover:scale-110 transition-all duration-[4000ms] ease-out">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      </div>
+
+      {/* STABLE SEPARATOR (No negative position) */}
+      <div className="relative w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.05] to-transparent" />
     </motion.div>
   );
 }
