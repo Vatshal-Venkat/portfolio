@@ -95,7 +95,7 @@ export default function Hero() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-[18%] left-1/2 -translate-x-1/2 h-[65vh] md:h-[75vh] w-full max-w-[700px] z-20 pointer-events-none flex justify-center items-end"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[65vh] md:h-[75vh] w-[55%] md:w-[50%] lg:w-full max-w-[500px] lg:max-w-[700px] z-20 pointer-events-none flex justify-center items-end"
             >
                 <div className="relative w-full h-full">
                     <Image
@@ -109,28 +109,34 @@ export default function Hero() {
             </motion.div>
 
             {/* FILM STRIP / HORIZONTAL BORDER */}
-            <div className="absolute bottom-[18%] w-full h-[2px] bg-gradient-to-r from-transparent via-[#B38B71]/50 to-transparent z-30"></div>
+            <div className="absolute bottom-[20%] w-full h-12 bg-black/60 backdrop-blur-sm z-30 border-y border-white/10 flex items-center overflow-hidden">
+                <div className="flex w-[300%] animate-[slide_30s_linear_infinite] opacity-30">
+                    {[...Array(30)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-6 px-3">
+                            <span className="w-2.5 h-1 bg-white rounded-sm" style={{ clipPath: "polygon(10% 0, 90% 0, 100% 100%, 0% 100%)" }}></span>
+                            <span className="w-2.5 h-1 bg-white rounded-sm" style={{ clipPath: "polygon(10% 0, 90% 0, 100% 100%, 0% 100%)" }}></span>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-            {/* Bottom dark area - clean space for text */}
-            <div className="absolute bottom-0 left-0 w-full h-[18%] bg-[#020202] z-25"></div>
-
-            {/* BOTTOM LEFT STORY / INFO - Firmly anchored to bottom-left */}
+            {/* LEFT SIDE INFO - positioned in the dark area left of the photo */}
             <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                className="absolute bottom-6 left-6 md:bottom-10 md:left-10 max-w-[200px] md:max-w-[260px] lg:max-w-[300px] z-[60] pointer-events-none"
+                className="absolute left-6 md:left-10 lg:left-14 bottom-[4%] md:bottom-[6%] max-w-[140px] md:max-w-[200px] lg:max-w-[240px] z-[60] pointer-events-none"
             >
                 <div className="flex items-center gap-2 mb-3">
-                    <span className="w-2 h-2 rounded-full bg-[#B38B71] animate-pulse"></span>
-                    <span className="text-[#B38B71] text-[9px] md:text-[11px] font-bold tracking-[0.25em] uppercase">VENKAT VATSHAL</span>
+                    <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#B38B71] animate-pulse"></span>
+                    <span className="text-[#B38B71] text-[8px] md:text-[10px] font-bold tracking-[0.25em] uppercase">VENKAT VATSHAL</span>
                 </div>
                 <div className="border-l-2 border-[#B38B71]/60 pl-3 md:pl-4">
-                    <p className="text-white/90 text-[10px] md:text-xs leading-relaxed font-medium tracking-wide">
+                    <p className="text-white/90 text-[9px] md:text-xs leading-relaxed font-medium tracking-wide">
                         Building intelligent systems for real-world deployment.
                     </p>
-                    <p className="text-white/50 text-[9px] md:text-[11px] leading-relaxed font-medium tracking-wide mt-1">
-                        Specializing in vector search pipelines, and scalable AI infrastructure.
+                    <p className="text-white/50 text-[8px] md:text-[11px] leading-relaxed font-medium tracking-wide mt-1">
+                        Vector search pipelines &amp; scalable AI infrastructure.
                     </p>
                 </div>
             </motion.div>
