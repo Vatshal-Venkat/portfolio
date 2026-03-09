@@ -6,23 +6,44 @@ import ProjectCard from "@/components/ProjectCard";
 const projects = [
   {
     title: "TEASER – RAG Agent",
-    description:
-      "End-to-end Retrieval-Augmented Generation system with embeddings pipeline, vector search, and production-ready FastAPI backend.",
+    description: "End-to-end Retrieval-Augmented Generation system with embeddings pipeline, vector search, and production-ready FastAPI backend.",
     techStack: ["FastAPI", "LangChain", "FAISS", "React", "MCP"],
+    features: [
+      "End-to-end RAG pipeline",
+      "Vector search optimization",
+      "Production-ready FastAPI backend",
+      "Scalable embedding storage"
+    ],
+    githubUrl: "https://github.com/Vatshal-Venkat/rag-agent",
+    accentColor: "from-teal-400 to-emerald-500",
     href: "/projects/rag_agent",
   },
   {
     title: "Online Examination Portal",
-    description:
-      "Full-stack scalable examination system with anti-cheating detection, dynamic exam generation, automated evaluation and leaderboard analytics.",
+    description: "Full-stack scalable examination system with anti-cheating detection, dynamic exam generation, automated evaluation and leaderboard analytics.",
     techStack: ["Next.js", "WixStudio", "Node.js", "JavaScript"],
+    features: [
+      "Anti-cheating detection system",
+      "Dynamic exam generation",
+      "Automated evaluation engine",
+      "Real-time leaderboard analytics"
+    ],
+    githubUrl: "https://github.com/Vatshal-Venkat/exam-portal",
+    accentColor: "from-orange-500 to-red-600",
     href: "/projects/online_exam",
   },
   {
     title: "Cross-Modal Similarity Engine",
-    description:
-      "AI system evaluating similarity across text, images, audio and video using embedding models and cosine similarity scoring.",
+    description: "AI system evaluating similarity across text, images, audio and video using embedding models and cosine similarity scoring.",
     techStack: ["CLIP", "MiniLM", "Wav2Vec2", "Deep Learning"],
+    features: [
+      "Multi-modal embedding support",
+      "Cosine similarity scoring",
+      "Text-to-image/video retrieval",
+      "Audio similarity analysis"
+    ],
+    githubUrl: "https://github.com/Vatshal-Venkat/cross-modal-engine",
+    accentColor: "from-blue-500 to-purple-600",
     href: "/projects/Cross_modal",
   },
 ];

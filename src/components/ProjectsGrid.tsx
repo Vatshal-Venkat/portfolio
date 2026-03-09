@@ -74,10 +74,7 @@ export default function ProjectsGrid() {
                         <ProjectCard
                             key={index}
                             index={index}
-                            title={project.title}
-                            description={project.description}
-                            href={project.href}
-                            techStack={project.techStack}
+                            {...project}
                         />
                     ))}
                 </div>

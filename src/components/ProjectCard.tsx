@@ -1,13 +1,16 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRef } from "react";
+import { FiGithub, FiPlay } from "react-icons/fi";
 
 interface ProjectCardProps {
   title: string;
   description: string;
   href: string;
   techStack?: string[];
+  features?: string[];
+  githubUrl?: string;
+  accentColor?: string;
   index: number;
 }
 
@@ -16,102 +19,105 @@ export default function ProjectCard({
   description,
   href,
   techStack,
+  features,
+  githubUrl,
+  accentColor = "from-teal-400 to-emerald-500",
   index,
 }: ProjectCardProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    containerRef.current.style.setProperty("--x", `${x}px`);
-    containerRef.current.style.setProperty("--y", `${y}px`);
-  };
-
   return (
     <motion.div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{
-        duration: 1.2,
-        delay: index * 0.1,
-        ease: [0.16, 1, 0.3, 1],
-      }}
-      className="group relative h-full"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8, delay: index * 0.1 }}
+      className="group relative flex flex-col h-full bg-[#111827]/80 rounded-2xl overflow-hidden border border-white/5 backdrop-blur-sm"
     >
-      <Link href={href} className="flex flex-col h-full perspective-1000">
-        {/* VISUAL COMPOSITION - TOP (Vertical Grid Focus) */}
-        <div className="relative w-full aspect-[16/10] flex items-center justify-center overflow-hidden">
-          {/* Subtle Glow Base */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(179,139,113,0.1),transparent_70%)] opacity-30 group-hover:opacity-100 transition-opacity duration-1000" />
+      {/* Top Accent Border */}
+      <div className={`h-1.5 w-full bg-gradient-to-r ${accentColor}`} />
 
-          {/* Dynamic Light Trace */}
-          <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none z-10"
-            style={{
-              background: `radial-gradient(300px circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.02), transparent 60%)`
-            }}
-          />
-
-          {/* Large Stylized Number (Smaller for grid) */}
-          <span className="text-white/[0.03] text-[15vw] lg:text-[10vw] font-black tracking-tighter select-none group-hover:scale-110 group-hover:text-white/[0.06] transition-all duration-1000">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-white/20 text-[9px] tracking-[0.8em] font-black uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
-              Project Node {String(index + 1).padStart(2, "0")}
-            </span>
-          </div>
-        </div>
-
-        {/* PROJECT DETAILS - BOTTOM (Vertical Grid Focus) */}
-        <div className="relative flex-1 p-8 lg:p-10 flex flex-col items-start text-left overflow-hidden">
-          {/* Subtle Detail Highlight (Glass/Glow on hover) */}
-          <div className="absolute inset-0 bg-white/[0.01] opacity-0 group-hover:opacity-100 blur-2xl transition-all duration-1000 -z-10" />
-
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-[1px] bg-[#B38B71]/40" />
-            <span className="text-[#B38B71] text-[10px] tracking-[0.6em] uppercase font-black">
-              {String(index + 1).padStart(2, "0")} / Evolution
-            </span>
-          </div>
-
-          <h3 className="text-3xl lg:text-4xl font-black text-white leading-tight tracking-tighter mb-6 group-hover:text-[#B38B71] transition-colors duration-500">
+      <div className="p-8 md:p-10 flex flex-col h-full">
+        {/* Header: Title & GitHub */}
+        <div className="flex justify-between items-start mb-6">
+          <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
             {title}
           </h3>
+          {githubUrl && (
+            <a
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all cursor-pointer"
+            >
+              <FiGithub className="w-5 h-5" />
+            </a>
+          )}
+        </div>
 
-          <p className="text-white/40 text-sm lg:text-base leading-relaxed mb-8 max-w-full font-medium tracking-wide">
-            {description}
-          </p>
+        {/* Description */}
+        <p className="text-white/60 text-sm md:text-base leading-relaxed mb-8">
+          {description}
+        </p>
 
-          {/* Minimal Tech List - Inline for grid compactness */}
-          <div className="flex flex-wrap gap-x-4 gap-y-2 mb-10">
+        {/* Key Features */}
+        {features && features.length > 0 && (
+          <div className="mb-8">
+            <h4 className="text-[#3b82f6] text-sm font-bold mb-4 uppercase tracking-wider">
+              Key Features
+            </h4>
+            <ul className="space-y-3">
+              {features.map((feature, i) => (
+                <li key={i} className="flex items-start gap-3 text-white/80 text-sm">
+                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Tech Stack */}
+        <div className="mb-10">
+          <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+            Tech Stack
+          </h4>
+          <div className="flex flex-wrap gap-2">
             {techStack?.map((tech, i) => (
               <span
                 key={i}
-                className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] group-hover:text-[#B38B71]/80 transition-colors duration-500"
+                className="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-white/60 text-[11px] font-bold tracking-tight hover:bg-white/10 transition-colors"
               >
                 {tech}
               </span>
             ))}
           </div>
+        </div>
 
-          {/* Action Trigger - Highlighted */}
-          <div className="mt-auto flex items-center justify-between w-full group/cta">
-            <span className="text-[10px] tracking-[0.5em] uppercase font-black text-white/10 group-hover/cta:text-white transition-colors duration-500">
-              Explore reflection
-            </span>
-            <div className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center group-hover/cta:border-[#B38B71]/50 group-hover/cta:bg-[#B38B71]/10 transition-all duration-500">
-              <span className="text-lg text-white/20 group-hover/cta:text-white transform group-hover/cta:translate-x-1 transition-all duration-500">→</span>
+        {/* Project View & Media Preview */}
+        <div className="mt-auto space-y-6">
+          <Link
+            href={href}
+            className="flex items-center gap-2 text-emerald-400 text-sm font-bold hover:gap-4 transition-all"
+          >
+            <FiPlay className="w-5 h-5" />
+            My Complete Project Overview
+          </Link>
+
+          {/* Media Placeholder Area */}
+          <div className="group/visual relative w-full aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/5 flex items-center justify-center">
+            {/* Dynamic Ambient Blur */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${accentColor} opacity-5 group-hover/visual:opacity-10 transition-opacity`} />
+
+            {/* Center Label */}
+            <div className="flex flex-col items-center gap-2 text-white/20 group-hover/visual:text-white/40 transition-colors">
+              <FiPlay className="w-10 h-10" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Phase {String(index + 1).padStart(2, '0')} / Preview</span>
             </div>
+
+            {/* Inner Border Overlay */}
+            <div className="absolute inset-0 border border-white/5 rounded-xl pointer-events-none" />
           </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 }
