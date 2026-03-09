@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function Hero() {
     return (
-        <section className="relative w-full h-screen bg-[#020202] overflow-hidden font-sans selection:bg-[#B38B71]/30 flex flex-col items-center justify-center">
+        <section className="relative w-full h-screen bg-[#020202] overflow-hidden font-sans selection:bg-[#B38B71]/30">
 
             {/* Top Navigation / Brand */}
             <div className="absolute top-6 left-6 md:top-8 md:left-8 z-40 flex items-center gap-1">
@@ -16,86 +16,117 @@ export default function Hero() {
 
             {/* Top Right Actions */}
             <div className="absolute top-6 right-6 md:top-8 md:right-8 z-40 flex items-center gap-4">
-                <div className="hidden md:flex gap-2 text-white/50">
-                    <a href="https://linkedin.com/in/venkatvatshal" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-[10px] hover:border-white transition-colors">IN</a>
-                    <a href="https://github.com/venkatvatshal" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-[10px] hover:border-white transition-colors">GH</a>
-                </div>
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-neutral-200 transition-colors">
                     <span className="w-3 md:w-4 h-0.5 bg-black"></span>
                     <span className="w-3 md:w-4 h-0.5 bg-black"></span>
                 </div>
             </div>
 
-            {/* Top Menu Links */}
-            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 hidden lg:flex items-center gap-6 xl:gap-8 text-[9px] text-white/40 tracking-[0.3em] font-semibold uppercase">
-                <span className="hover:text-white cursor-pointer transition relative">
-                    AI ENGINEER
-                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#B38B71] rounded-full"></span>
-                </span>
-                <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                <span className="hover:text-white cursor-pointer transition">FULL STACK</span>
-                <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                <span className="hover:text-white cursor-pointer transition">BACKEND</span>
-                <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                <span className="hover:text-white cursor-pointer transition">SYSTEMS</span>
+            {/* BACKGROUND TEXT — reduced size, offset to center-right */}
+            <div className="absolute inset-0 flex items-center justify-center z-[1] pointer-events-none select-none overflow-hidden">
+                <motion.h1
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 0.06 }}
+                    transition={{ duration: 1.2, delay: 0.3 }}
+                    className="text-[18vw] md:text-[14vw] font-black text-white leading-none tracking-[0.04em] uppercase whitespace-nowrap translate-x-[10%]"
+                >
+                    VATSHAL
+                </motion.h1>
             </div>
 
-            {/* Small pills Top Left under logo */}
-            <div className="absolute top-16 left-6 md:top-20 md:left-8 z-40 hidden md:flex gap-2">
-                <span className="px-3 py-1 rounded-full border border-white/20 text-[8px] text-white/60 tracking-widest uppercase">PYTHON</span>
-                <span className="px-3 py-1 rounded-full border border-white/20 text-[8px] text-white/60 tracking-widest uppercase">REACT</span>
-                <span className="px-3 py-1 rounded-full border border-white/20 text-[8px] text-white/60 tracking-widest uppercase">INFRA</span>
+            {/* ========== LEFT CONTENT AREA ========== */}
+            <div
+                style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '55%', zIndex: 30 }}
+                className="flex flex-col justify-center pl-8 md:pl-14 lg:pl-20 pr-4 pointer-events-none"
+            >
+                <motion.div
+                    initial={{ y: 40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="pointer-events-auto"
+                >
+                    {/* Role pills */}
+                    <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
+                        <span className="px-3 py-1 rounded-full border border-white/15 text-[9px] md:text-[10px] text-white/50 tracking-[0.2em] uppercase font-medium backdrop-blur-sm">AI Engineer</span>
+                        <span className="px-3 py-1 rounded-full border border-white/15 text-[9px] md:text-[10px] text-white/50 tracking-[0.2em] uppercase font-medium backdrop-blur-sm">Full Stack</span>
+                        <span className="px-3 py-1 rounded-full border border-white/15 text-[9px] md:text-[10px] text-white/50 tracking-[0.2em] uppercase font-medium backdrop-blur-sm">Systems</span>
+                    </div>
+
+                    {/* Main headline */}
+                    <h2 className="text-white text-3xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight mb-4 md:mb-6">
+                        Crafting AI
+                        <br />
+                        that <span className="text-[#B38B71]">ships</span>
+                        <br />
+                        <span className="text-[#B38B71]">to prod.</span>
+                    </h2>
+
+                    {/* Accent divider */}
+                    <div className="w-12 md:w-16 h-[2px] bg-gradient-to-r from-[#B38B71] to-transparent mb-5 md:mb-6"></div>
+
+                    {/* Description */}
+                    <p className="text-white/50 text-xs md:text-sm leading-relaxed max-w-[340px] mb-6 md:mb-8 font-medium tracking-wide">
+                        Full-stack engineer specializing in intelligent systems,
+                        vector search pipelines, and production-grade AI infrastructure.
+                    </p>
+
+                    {/* CTA Buttons */}
+                    <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-10">
+                        <a href="/resume.pdf" target="_blank" className="px-6 py-2.5 md:px-8 md:py-3 rounded-full bg-white text-black font-bold tracking-widest text-[10px] md:text-[11px] hover:bg-[#B38B71] hover:text-white transition-all whitespace-nowrap flex items-center gap-2 group shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                            RESUME
+                            <span className="transition-transform group-hover:translate-x-1 font-black text-xs">→</span>
+                        </a>
+                        <a href="#projects" className="px-6 py-2.5 md:px-8 md:py-3 rounded-full border border-white/20 text-white/70 font-bold tracking-widest text-[10px] md:text-[11px] hover:border-white hover:text-white transition-all whitespace-nowrap backdrop-blur-md">
+                            PROJECTS
+                        </a>
+                    </div>
+
+                    {/* Social Links */}
+                    <div className="flex items-center gap-4">
+                        <a href="https://linkedin.com/in/venkat-vatshal" target="_blank" rel="noreferrer" className="group flex items-center gap-2 text-white/40 hover:text-white transition-colors">
+                            <span className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center text-[10px] font-bold group-hover:border-[#B38B71] group-hover:text-[#B38B71] transition-colors">IN</span>
+                            <span className="text-[10px] tracking-widest uppercase font-medium hidden md:inline">LinkedIn</span>
+                        </a>
+                        <a href="https://github.com/vatshal-venkat" target="_blank" rel="noreferrer" className="group flex items-center gap-2 text-white/40 hover:text-white transition-colors">
+                            <span className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center text-[10px] font-bold group-hover:border-[#B38B71] group-hover:text-[#B38B71] transition-colors">GH</span>
+                            <span className="text-[10px] tracking-widest uppercase font-medium hidden md:inline">GitHub</span>
+                        </a>
+                        <a href="mailto:venkatvatshal@gmail.com" className="group flex items-center gap-2 text-white/40 hover:text-white transition-colors">
+                            <span className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center text-[10px] font-bold group-hover:border-[#B38B71] group-hover:text-[#B38B71] transition-colors">@</span>
+                            <span className="text-[10px] tracking-widest uppercase font-medium hidden md:inline">Email</span>
+                        </a>
+                    </div>
+                </motion.div>
+
+                {/* Bottom-left status */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 1.2 }}
+                    className="absolute bottom-8 left-8 md:left-14 lg:left-20 flex items-center gap-3"
+                >
+                    <span className="w-2 h-2 rounded-full bg-[#B38B71] animate-pulse"></span>
+                    <span className="text-white/25 text-[9px] md:text-[10px] tracking-[0.25em] uppercase font-semibold">Available for work</span>
+                </motion.div>
             </div>
 
-            <div className="absolute top-16 right-6 md:top-20 md:right-8 z-40 text-[8px] text-white/60 tracking-[0.2em] uppercase">
-                PORTFOLIO [2026]
-            </div>
-
-            {/* Circle Background */}
+            {/* ========== RIGHT SIDE — Circle + Photo ========== */}
+            {/* Circle background — positioned right */}
             <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vmin] h-[60vmin] max-w-[500px] max-h-[500px] bg-[#B38B71] rounded-full z-0"
+                style={{ position: 'absolute', right: '-5%', top: '50%', transform: 'translateY(-50%)', zIndex: 2 }}
+                className="w-[50vmin] h-[50vmin] md:w-[55vmin] md:h-[55vmin] max-w-[550px] max-h-[550px] bg-[#B38B71] rounded-full"
             />
 
-            {/* Top Trait Names */}
-            <div className="absolute top-[28%] md:top-[25%] w-full max-w-6xl px-[5%] flex justify-between items-center text-white/90 font-bold tracking-[0.1em] text-[10px] md:text-sm lg:text-lg z-10 pointer-events-none">
-                <span className="flex-1 text-center">SCALABLE</span>
-                <span className="flex-1 text-center">INTELLIGENT</span>
-                <div className="flex gap-1 h-8 md:h-12 mx-2 md:mx-4">
-                    <div className="w-1.5 md:w-2.5 h-full bg-white"></div>
-                    <div className="w-1.5 md:w-2.5 h-full bg-white"></div>
-                    <div className="w-1.5 md:w-2.5 h-full bg-white"></div>
-                </div>
-                <span className="flex-1 text-center">PERFORMANT</span>
-                <span className="flex-1 text-center">ROBUST</span>
-            </div>
-
-            {/* BACKGROUND TEXT */}
-            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none overflow-hidden h-full">
-                {/* VATSHAL - Centered */}
-                <motion.h1
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 1, delay: 0.3 }}
-                    className="text-[16vw] font-black text-white leading-none tracking-[0.02em] m-0 uppercase scale-y-110"
-                >
-                    VATSHAL
-                </motion.h1>
-
-                {/* Vertical Year text */}
-                <div className="absolute right-[4%] bottom-[25%] text-white text-[10px] md:text-xs tracking-widest origin-bottom-right -rotate-90">
-                    [2005-JAN-21]
-                </div>
-            </div>
-
-            {/* MAIN CHARACTER IMAGE */}
+            {/* Photo — positioned right */}
             <motion.div
-                initial={{ y: 100, opacity: 0 }}
+                initial={{ y: 80, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[65vh] md:h-[75vh] w-full max-w-[700px] z-20 pointer-events-none flex justify-center items-end"
+                style={{ position: 'absolute', right: '0', bottom: '0', zIndex: 20, pointerEvents: 'none' }}
+                className="h-[60vh] md:h-[80vh] w-[45%] md:w-[42%] flex justify-center items-end"
             >
                 <div className="relative w-full h-full">
                     <Image
@@ -103,92 +134,31 @@ export default function Hero() {
                         alt="Venkat Vatshal"
                         fill
                         priority
-                        className="object-contain object-bottom drop-shadow-[0_10px_30px_rgba(0,0,0,0.6)]"
+                        className="object-contain object-bottom drop-shadow-[0_10px_40px_rgba(0,0,0,0.7)]"
                     />
                 </div>
             </motion.div>
 
-            {/* FILM STRIP / HORIZONTAL BORDER */}
-            <div className="absolute bottom-[20%] w-full h-12 bg-black/60 backdrop-blur-sm z-30 border-y border-white/10 flex items-center overflow-hidden">
-                <div className="flex w-[300%] animate-[slide_30s_linear_infinite] opacity-30">
-                    {[...Array(30)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-6 px-3">
-                            <span className="w-2.5 h-1 bg-white rounded-sm" style={{ clipPath: "polygon(10% 0, 90% 0, 100% 100%, 0% 100%)" }}></span>
-                            <span className="w-2.5 h-1 bg-white rounded-sm" style={{ clipPath: "polygon(10% 0, 90% 0, 100% 100%, 0% 100%)" }}></span>
-                        </div>
-                    ))}
-                </div>
+            {/* Subtle horizontal line accent */}
+            <div style={{ position: 'absolute', bottom: '18%', left: 0, right: 0, height: '1px', zIndex: 25 }} className="bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
+            {/* Vertical year text — right side */}
+            <div style={{ position: 'absolute', right: '3%', bottom: '22%', zIndex: 35 }} className="text-white/20 text-[10px] md:text-xs tracking-widest origin-bottom-right -rotate-90">
+                [2005-JAN-21]
             </div>
 
-            {/* LEFT CORNER INFO — vertically centered on the left side */}
-            <div style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', zIndex: 60 }} className="pointer-events-none max-w-[160px] md:max-w-[220px] lg:max-w-[280px]">
-                <motion.div
-                    initial={{ x: -30, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 1.2, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                >
-                    {/* Accent line */}
-                    <div className="w-8 md:w-12 h-[2px] bg-gradient-to-r from-[#B38B71] to-transparent mb-4 md:mb-6"></div>
-
-                    {/* Name label */}
-                    <p className="text-[#B38B71] text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase mb-2 md:mb-3">
-                        VENKAT VATSHAL
-                    </p>
-
-                    {/* Main headline */}
-                    <h2 className="text-white text-sm md:text-lg lg:text-xl font-black leading-tight tracking-tight mb-3 md:mb-4">
-                        Crafting AI that
-                        <br />
-                        <span className="text-[#B38B71]">ships to prod.</span>
-                    </h2>
-
-                    {/* Description */}
-                    <p className="text-white/50 text-[10px] md:text-xs leading-relaxed font-medium tracking-wide">
-                        Full-stack engineer building
-                        <br className="hidden md:block" /> intelligent, production-grade systems.
-                    </p>
-
-                    {/* Bottom accent */}
-                    <div className="mt-4 md:mt-6 flex items-center gap-3">
-                        <span className="w-2 h-2 rounded-full bg-[#B38B71] animate-pulse"></span>
-                        <span className="text-white/30 text-[8px] md:text-[10px] tracking-[0.2em] uppercase font-semibold">Available for work</span>
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* BOTTOM RIGHT ACTIONS */}
+            {/* Scroll indicator */}
             <motion.div
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 1, delay: 0.8 }}
-                className="absolute bottom-10 right-4 md:bottom-12 md:right-12 z-[100] flex items-center gap-3 md:gap-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 1.5 }}
+                style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 35 }}
+                className="flex flex-col items-center gap-2"
             >
-                {/* Resume button */}
-                <a href="/resume.pdf" target="_blank" className="px-5 py-2.5 md:px-6 md:py-3 rounded-full border-2 border-white text-white font-bold tracking-widest text-[10px] md:text-[11px] hover:bg-white hover:text-black transition-all whitespace-nowrap flex items-center gap-2 group bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.15)] pointer-events-auto">
-                    RESUME
-                    <span className="text-current transition-transform group-hover:translate-x-1 font-black">&gt;</span>
-                </a>
-
-                {/* Badge */}
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-white/30 items-center justify-center relative overflow-hidden flex bg-black/80 backdrop-blur-xl cursor-pointer hover:border-white transition-colors group shadow-[0_0_15px_rgba(0,0,0,0.8)] pointer-events-auto">
-                    <div className="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
-                        <div className="w-full h-[2px] bg-[#B38B71] rotate-45"></div>
-                        <div className="w-full h-[2px] bg-[#B38B71] -rotate-45 absolute"></div>
-                        <div className="w-[2px] h-full bg-[#B38B71] rotate-12 absolute"></div>
-                    </div>
-                    <span className="text-white font-black text-[8px] md:text-[10px] relative z-10 leading-none text-center -rotate-12 italic tracking-tighter drop-shadow-md">
-                        VAT<br />SHAL
-                    </span>
-                </div>
+                <span className="text-white/20 text-[8px] tracking-[0.3em] uppercase font-medium">Scroll</span>
+                <div className="w-[1px] h-6 bg-gradient-to-b from-white/30 to-transparent animate-pulse"></div>
             </motion.div>
 
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                @keyframes slide {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-            `}} />
         </section>
     );
 }
