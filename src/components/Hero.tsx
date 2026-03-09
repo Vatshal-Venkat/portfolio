@@ -95,7 +95,7 @@ export default function Hero() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[65vh] md:h-[75vh] w-[55%] md:w-[50%] lg:w-full max-w-[500px] lg:max-w-[700px] z-20 pointer-events-none flex justify-center items-end"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[65vh] md:h-[75vh] w-full max-w-[700px] z-20 pointer-events-none flex justify-center items-end"
             >
                 <div className="relative w-full h-full">
                     <Image
@@ -120,26 +120,41 @@ export default function Hero() {
                 </div>
             </div>
 
-            {/* LEFT SIDE INFO - positioned in the dark area left of the photo */}
-            <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 1, delay: 0.8 }}
-                className="absolute left-6 md:left-10 lg:left-14 bottom-[4%] md:bottom-[6%] max-w-[140px] md:max-w-[200px] lg:max-w-[240px] z-[60] pointer-events-none"
-            >
-                <div className="flex items-center gap-2 mb-3">
-                    <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#B38B71] animate-pulse"></span>
-                    <span className="text-[#B38B71] text-[8px] md:text-[10px] font-bold tracking-[0.25em] uppercase">VENKAT VATSHAL</span>
-                </div>
-                <div className="border-l-2 border-[#B38B71]/60 pl-3 md:pl-4">
-                    <p className="text-white/90 text-[9px] md:text-xs leading-relaxed font-medium tracking-wide">
-                        Building intelligent systems for real-world deployment.
+            {/* LEFT CORNER INFO — vertically centered on the left side */}
+            <div style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', zIndex: 60 }} className="pointer-events-none max-w-[160px] md:max-w-[220px] lg:max-w-[280px]">
+                <motion.div
+                    initial={{ x: -30, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 1.2, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                >
+                    {/* Accent line */}
+                    <div className="w-8 md:w-12 h-[2px] bg-gradient-to-r from-[#B38B71] to-transparent mb-4 md:mb-6"></div>
+
+                    {/* Name label */}
+                    <p className="text-[#B38B71] text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase mb-2 md:mb-3">
+                        VENKAT VATSHAL
                     </p>
-                    <p className="text-white/50 text-[8px] md:text-[11px] leading-relaxed font-medium tracking-wide mt-1">
-                        Vector search pipelines &amp; scalable AI infrastructure.
+
+                    {/* Main headline */}
+                    <h2 className="text-white text-sm md:text-lg lg:text-xl font-black leading-tight tracking-tight mb-3 md:mb-4">
+                        Crafting AI that
+                        <br />
+                        <span className="text-[#B38B71]">ships to prod.</span>
+                    </h2>
+
+                    {/* Description */}
+                    <p className="text-white/50 text-[10px] md:text-xs leading-relaxed font-medium tracking-wide">
+                        Full-stack engineer building
+                        <br className="hidden md:block" /> intelligent, production-grade systems.
                     </p>
-                </div>
-            </motion.div>
+
+                    {/* Bottom accent */}
+                    <div className="mt-4 md:mt-6 flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-[#B38B71] animate-pulse"></span>
+                        <span className="text-white/30 text-[8px] md:text-[10px] tracking-[0.2em] uppercase font-semibold">Available for work</span>
+                    </div>
+                </motion.div>
+            </div>
 
             {/* BOTTOM RIGHT ACTIONS */}
             <motion.div
@@ -148,13 +163,13 @@ export default function Hero() {
                 transition={{ duration: 1, delay: 0.8 }}
                 className="absolute bottom-10 right-4 md:bottom-12 md:right-12 z-[100] flex items-center gap-3 md:gap-4"
             >
-                {/* The 'BOOK NOW' equivalent button renamed to 'RESUME' */}
+                {/* Resume button */}
                 <a href="/resume.pdf" target="_blank" className="px-5 py-2.5 md:px-6 md:py-3 rounded-full border-2 border-white text-white font-bold tracking-widest text-[10px] md:text-[11px] hover:bg-white hover:text-black transition-all whitespace-nowrap flex items-center gap-2 group bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.15)] pointer-events-auto">
                     RESUME
                     <span className="text-current transition-transform group-hover:translate-x-1 font-black">&gt;</span>
                 </a>
 
-                {/* The circular 'IMAX/DEADPOOL' equivalent ticket badge */}
+                {/* Badge */}
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-white/30 items-center justify-center relative overflow-hidden flex bg-black/80 backdrop-blur-xl cursor-pointer hover:border-white transition-colors group shadow-[0_0_15px_rgba(0,0,0,0.8)] pointer-events-auto">
                     <div className="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
                         <div className="w-full h-[2px] bg-[#B38B71] rotate-45"></div>
