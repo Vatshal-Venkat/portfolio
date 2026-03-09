@@ -71,32 +71,28 @@ export default function ProjectsPage() {
           </p>
         </motion.div>
 
-        {/* Interactive Projects list */}
-        <div className="flex flex-col gap-32 md:gap-48 lg:gap-64">
+        {/* Interactive Projects Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 lg:gap-24">
           {projects.map((project, i) => (
             <ProjectCard key={i} {...project} index={i} />
           ))}
         </div>
 
-        {/* Progressive Footer */}
+        {/* Cinematic Footer Section */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.2, delay: 0.3 }}
-          className="mt-64 pb-32 flex flex-col items-center"
+          transition={{ duration: 1.5, delay: 0.3 }}
+          className="mt-48 pb-32 flex flex-col items-center"
         >
-          <div className="flex items-center gap-8 mb-6">
-            <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <span className="text-white/10 text-[9px] tracking-[0.8em] uppercase font-black">
+          <div className="flex items-center gap-10 mb-8">
+            <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+            <span className="text-white/5 text-[10px] tracking-[0.8em] font-black uppercase">
               End of Chapter
             </span>
-            <div className="w-20 h-[1px] bg-gradient-to-l from-transparent via-white/10 to-transparent" />
+            <div className="w-24 h-[1px] bg-gradient-to-l from-transparent via-white/5 to-transparent" />
           </div>
-
-          <p className="text-white/20 text-[10px] tracking-[0.5em] font-bold uppercase">
-            Expansion in progress.
-          </p>
         </motion.div>
 
       </div>

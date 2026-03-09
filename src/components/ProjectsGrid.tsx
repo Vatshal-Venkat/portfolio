@@ -68,8 +68,8 @@ export default function ProjectsGrid() {
                     </p>
                 </motion.div>
 
-                {/* PROJECT LIST - ETHEREAL FLOW */}
-                <div className="flex flex-col gap-24 md:gap-40 lg:gap-56">
+                {/* PROJECT GRID - ETHEREAL FLOW */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 lg:gap-24">
                     {projects.map((project, index) => (
                         <ProjectCard
                             key={index}
@@ -87,7 +87,7 @@ export default function ProjectsGrid() {
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 1.5, delay: 0.3 }}
+                    transition={{ duration: 1.2, delay: 0.3 }}
                     className="mt-32 flex flex-col items-center"
                 >
                     <div className="flex items-center gap-8 mb-4">
