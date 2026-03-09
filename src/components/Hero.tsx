@@ -95,7 +95,7 @@ export default function Hero() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[65vh] md:h-[75vh] w-full max-w-[700px] z-20 pointer-events-none flex justify-center items-end"
+                className="absolute bottom-[18%] left-1/2 -translate-x-1/2 h-[65vh] md:h-[75vh] w-full max-w-[700px] z-20 pointer-events-none flex justify-center items-end"
             >
                 <div className="relative w-full h-full">
                     <Image
@@ -109,32 +109,30 @@ export default function Hero() {
             </motion.div>
 
             {/* FILM STRIP / HORIZONTAL BORDER */}
-            <div className="absolute bottom-[20%] w-full h-12 bg-black/60 backdrop-blur-sm z-30 border-y border-white/10 flex items-center overflow-hidden">
-                <div className="flex w-[300%] animate-[slide_30s_linear_infinite] opacity-30">
-                    {[...Array(30)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-6 px-3">
-                            <span className="w-2.5 h-1 bg-white rounded-sm" style={{ clipPath: "polygon(10% 0, 90% 0, 100% 100%, 0% 100%)" }}></span>
-                            <span className="w-2.5 h-1 bg-white rounded-sm" style={{ clipPath: "polygon(10% 0, 90% 0, 100% 100%, 0% 100%)" }}></span>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <div className="absolute bottom-[18%] w-full h-[2px] bg-gradient-to-r from-transparent via-[#B38B71]/50 to-transparent z-30"></div>
+
+            {/* Bottom dark area - clean space for text */}
+            <div className="absolute bottom-0 left-0 w-full h-[18%] bg-[#020202] z-25"></div>
 
             {/* BOTTOM LEFT STORY / INFO - Firmly anchored to bottom-left */}
             <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                className="absolute bottom-4 left-4 md:bottom-8 md:left-8 max-w-[150px] md:max-w-[190px] lg:max-w-[220px] z-50 pointer-events-none"
+                className="absolute bottom-6 left-6 md:bottom-10 md:left-10 max-w-[200px] md:max-w-[260px] lg:max-w-[300px] z-[60] pointer-events-none"
             >
-                <div className="flex items-center gap-2 mb-2 text-[#B38B71] text-[6px] md:text-[8px] font-bold tracking-[0.2em] uppercase">
-                    <span className="w-3 h-3 md:w-4 md:h-4 rounded-full border border-[#B38B71] flex items-center justify-center text-[5px] md:text-[6px] shrink-0">V</span>
-                    <span className="truncate">VENKAT VATSHAL</span>
+                <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[#B38B71] animate-pulse"></span>
+                    <span className="text-[#B38B71] text-[9px] md:text-[11px] font-bold tracking-[0.25em] uppercase">VENKAT VATSHAL</span>
                 </div>
-                <p className="text-white/60 text-[7px] md:text-[9px] leading-relaxed font-semibold tracking-wider text-justify">
-                    Building intelligent systems for real-world deployment.
-                    Specializing in vector search pipelines, and scalable AI infrastructure.
-                </p>
+                <div className="border-l-2 border-[#B38B71]/60 pl-3 md:pl-4">
+                    <p className="text-white/90 text-[10px] md:text-xs leading-relaxed font-medium tracking-wide">
+                        Building intelligent systems for real-world deployment.
+                    </p>
+                    <p className="text-white/50 text-[9px] md:text-[11px] leading-relaxed font-medium tracking-wide mt-1">
+                        Specializing in vector search pipelines, and scalable AI infrastructure.
+                    </p>
+                </div>
             </motion.div>
 
             {/* BOTTOM RIGHT ACTIONS */}
