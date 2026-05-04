@@ -85,25 +85,20 @@ export default function Hero() {
                     opacity: [0.5, 0.7, 0.5],
                 }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-[40%] right-4 md:right-10 lg:right-16 -translate-y-1/2 w-[80vw] md:w-[45vw] max-w-[480px] aspect-square rounded-full bg-gradient-to-br from-[#B38B71] to-[#735038] blur-[80px] -z-10 mix-blend-screen"
+                className="absolute top-[40%] right-4 md:right-10 lg:right-16 -translate-y-1/2 w-[80vw] md:w-[45vw] max-w-[480px] aspect-square rounded-full bg-gradient-to-br from-[#B38B71] to-[#735038] blur-[80px] z-10 mix-blend-screen"
             />
 
             {/* Photo */}
-            <motion.div
-                initial={{ y: 80, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-0 right-[-10%] md:right-4 lg:right-16 z-20 pointer-events-none"
-            >
+            <div className="absolute bottom-0 right-[-10%] md:right-4 lg:right-16 z-50 pointer-events-none">
                 <Image
                     src="/Vatshal1.png"
                     alt="Venkat Vatshal"
                     width={700}
                     height={980}
                     priority
-                    className="w-[110vw] md:w-[55vw] lg:w-[45vw] max-w-[650px] h-auto object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] pointer-events-auto opacity-30 md:opacity-100"
+                    className="w-[110vw] md:w-[55vw] lg:w-[45vw] max-w-[650px] h-auto object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] pointer-events-auto"
                 />
-            </motion.div>
+            </div>
 
             {/* ========== BOTTOM ACCENTS ========== */}
             
