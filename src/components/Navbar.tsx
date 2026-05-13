@@ -41,6 +41,11 @@ export default function Navbar() {
                         Projects
                     </Link>
                     <span className="w-1 h-1 bg-white/20 rounded-full"></span>
+                    <Link href="/skills" className="hover:text-white transition-colors relative group">
+                        Skills
+                        <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#5B9DFF] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    </Link>
+                    <span className="w-1 h-1 bg-white/20 rounded-full"></span>
                     <Link href="#experience" className="hover:text-white transition-colors">
                         Experience
                     </Link>
