@@ -1,43 +1,45 @@
 import Hero from "@/components/Hero";
 import ProjectsGrid from "@/components/ProjectsGrid";
 import ExperienceList from "@/components/ExperienceList";
+import SkillsSection from "@/components/SkillsSection";
+import EducationSection from "@/components/EducationSection";
 
 export default function Home() {
   return (
-    <main className="w-full bg-[#020202]">
-
-      {/* 
-        HERO SECTION
-        Fills the exact screen height and establishes the cinematic theme.
-      */}
+    <div className="portfolio-wrapper">
       <Hero />
-
-      {/* 
-        ABOUT SECTION 
-      */}
-      <section id="about" className="min-h-screen py-24 flex items-center justify-center text-white relative z-10 border-t border-white/5 bg-[#0a0a0a]">
-        <div className="max-w-4xl px-8 text-center">
-          <h2 className="text-[#B38B71] text-xs font-bold tracking-[0.3em] uppercase mb-6">Part II. — The Architect</h2>
-          <p className="text-xl md:text-3xl text-white/80 font-semibold leading-relaxed tracking-wide">
-            I engineer highly scalable vector pipelines and robust backend infrastructure.
-            My focus is combining elegant system design with powerful AI capabilities.
+      
+      <section id="about" className="section container">
+        <h2 className="section-title">Part II. — Career Objective</h2>
+        <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <p className="h3" style={{ lineHeight: '1.8', maxWidth: '900px', margin: '0 auto', color: 'var(--text-primary)' }}>
+            AI Software Engineer with hands-on experience in building Generative AI applications, 
+            including RAG pipelines and agentic workflows. Skilled in developing scalable, production-ready 
+            systems using modern backend technologies and AI frameworks, with a focus on solving 
+            real-world problems through intelligent and efficient solutions.
           </p>
         </div>
       </section>
-
-      {/* 
-        PROJECTS SECTION
-      */}
-      <ProjectsGrid />
-
-      {/*
-        EXPERIENCE SECTION
-      */}
-      <section id="experience" className="min-h-[70vh] py-32 flex flex-col items-center justify-center text-white border-t border-white/5 bg-[#0a0a0a]">
-        <h2 className="text-[#B38B71] text-xs font-bold tracking-[0.3em] uppercase mb-16 relative z-10 bg-[#0a0a0a] px-4">Part IV. — History</h2>
+      
+      <section id="skills" className="section container">
+        <h2 className="section-title">Part III. — Technical Skills</h2>
+        <SkillsSection />
+      </section>
+      
+      <section id="experience" className="section container">
+        <h2 className="section-title">Part IV. — Work Experience</h2>
         <ExperienceList />
       </section>
 
-    </main>
+      <section id="projects" className="section container">
+        <h2 className="section-title">Part V. — Projects</h2>
+        <ProjectsGrid />
+      </section>
+      
+      <section id="education" className="section container">
+        <h2 className="section-title">Part VI. — Education & Certifications</h2>
+        <EducationSection />
+      </section>
+    </div>
   );
 }
