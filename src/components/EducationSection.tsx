@@ -1,41 +1,45 @@
 export default function EducationSection() {
   return (
     <div className="grid grid-cols-2 gap-lg mt-md">
-      {/* Education */}
+      {/* Education Timeline */}
       <div className="project-card" style={{ gridColumn: '1 / -1' }}>
         <div className="project-meta">Academic Path // History</div>
-        <h3 className="project-title text-gradient" style={{ marginBottom: '2rem' }}>Education</h3>
-        <div className="flex-col gap-md" style={{ display: 'flex' }}>
+        <h3 className="project-title text-gradient" style={{ marginBottom: '2.5rem' }}>Education</h3>
+        
+        <div className="timeline-container">
+          <div className="timeline-line"></div>
           
-          <div className="flex justify-between items-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <p className="text-primary" style={{ fontWeight: 600, fontSize: '1.1rem' }}>B-Tech, Artificial Intelligence</p>
-              <p className="text-muted">VIDYA JYOTHI INSTITUTE OF TECHNOLOGY</p>
+          {/* B-Tech */}
+          <div className="timeline-item">
+            <div className="timeline-dot"></div>
+            <div className="timeline-content">
+              <span className="timeline-date">2022 – 2026</span>
+              <h4 className="text-primary" style={{ fontWeight: 600, fontSize: '1.25rem' }}>B-Tech, Artificial Intelligence</h4>
+              <p className="text-muted" style={{ fontSize: '0.95rem', marginTop: '0.2rem' }}>VIDYA JYOTHI INSTITUTE OF TECHNOLOGY</p>
               <p className="text-secondary mt-sm" style={{ fontSize: '0.9rem' }}>Current CGPA - 8.80 (till 7th semester)</p>
             </div>
-            <div className="badge">2022 – 2026</div>
           </div>
           
-          <hr style={{ borderColor: 'var(--border-color)', opacity: 0.5, margin: '1rem 0' }} />
-
-          <div className="flex justify-between items-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <p className="text-primary" style={{ fontWeight: 600, fontSize: '1.1rem' }}>Intermediate</p>
-              <p className="text-muted">SRI CHAITANYA JUNIOR COLLEGE</p>
+          {/* Intermediate */}
+          <div className="timeline-item">
+            <div className="timeline-dot"></div>
+            <div className="timeline-content">
+              <span className="timeline-date">2020 – 2022</span>
+              <h4 className="text-primary" style={{ fontWeight: 600, fontSize: '1.25rem' }}>Intermediate</h4>
+              <p className="text-muted" style={{ fontSize: '0.95rem', marginTop: '0.2rem' }}>SRI CHAITANYA JUNIOR COLLEGE</p>
               <p className="text-secondary mt-sm" style={{ fontSize: '0.9rem' }}>Percentage - 92.2%</p>
             </div>
-            <div className="badge">2020 – 2022</div>
           </div>
           
-          <hr style={{ borderColor: 'var(--border-color)', opacity: 0.5, margin: '1rem 0' }} />
-
-          <div className="flex justify-between items-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <p className="text-primary" style={{ fontWeight: 600, fontSize: '1.1rem' }}>Class X</p>
-              <p className="text-muted">SRI CHAITANYA TECHNO SCHOOL</p>
+          {/* Class X */}
+          <div className="timeline-item">
+            <div className="timeline-dot"></div>
+            <div className="timeline-content">
+              <span className="timeline-date">2020</span>
+              <h4 className="text-primary" style={{ fontWeight: 600, fontSize: '1.25rem' }}>Class X</h4>
+              <p className="text-muted" style={{ fontSize: '0.95rem', marginTop: '0.2rem' }}>SRI CHAITANYA TECHNO SCHOOL</p>
               <p className="text-secondary mt-sm" style={{ fontSize: '0.9rem' }}>GPA - 10.0</p>
             </div>
-            <div className="badge">2020</div>
           </div>
         </div>
       </div>
