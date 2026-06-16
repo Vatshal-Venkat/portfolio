@@ -1,0 +1,288 @@
+/* Deadpool-inspired Cinematic About Card Styles */
+
+.about-section-container {
+  padding: var(--space-xl) 0;
+  position: relative;
+  overflow: visible; /* To allow the image to overflow the section boundaries */
+}
+
+.about-card-wrapper {
+  position: relative;
+  width: 100%;
+  height: 440px; /* Increased height so more of the circle is visible */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 2rem;
+  z-index: 10;
+}
+
+/* Background card frame */
+.about-card-frame {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+
+/* Cocoa brown circle behind the image */
+.about-card-circle {
+  position: absolute;
+  top: 50%;
+  right: calc(12% + 130px); /* Aligned exactly behind the center of the 260px portrait */
+  transform: translate(50%, -50%);
+  width: 400px; /* Enlarged properly */
+  height: 400px; /* Enlarged properly */
+  background: radial-gradient(circle at center, #CBB09C 0%, #9E7B66 45%, #76533D 75%, #462E20 100%); /* Stochastic organic radial gradient */
+  background-size: 160% 160%;
+  background-repeat: no-repeat;
+  animation: moveGradient 10s ease-in-out infinite; /* Smooth moving gradient */
+  border-radius: 50%;
+  z-index: 1;
+  box-shadow: 0 0 40px rgba(158, 123, 102, 0.35);
+  transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Card Content Grid */
+.about-card-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: var(--space-lg);
+  padding: 2.2rem 2.5rem; /* Reduced padding */
+  align-items: center;
+  height: 100%;
+  z-index: 4;
+}
+
+/* Details area (Left Column) */
+.about-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
+.about-card-tagline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.about-tagline-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+.about-card-objective {
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  line-height: 1.75;
+  color: var(--text-secondary);
+  font-weight: 400;
+  max-width: 580px;
+}
+
+/* Genre Pills / Skills Pills */
+.about-card-pills {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.about-pill {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: rgba(250, 248, 245, 0.04);
+  border: 1px solid rgba(250, 248, 245, 0.12);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Action Button */
+.about-card-cta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.about-btn-book {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: transparent;
+  border: 1.5px solid #FAF8F5;
+  color: #FAF8F5;
+  padding: 0.7rem 1.75rem; /* Slightly more compact padding */
+  border-radius: 30px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.about-btn-book:hover {
+  background: #FAF8F5;
+  color: var(--bg-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(250, 248, 245, 0.15);
+}
+
+.about-btn-arrow {
+  font-size: 0.95rem;
+  transition: transform 0.3s ease;
+}
+
+.about-btn-book:hover .about-btn-arrow {
+  transform: translateX(3px);
+}
+
+/* Portrait Image Container (z-index: 5, sits on top of frame but within wrapper) */
+.about-card-img-container {
+  position: absolute;
+  right: 12%;
+  bottom: 0;
+  height: 100%;
+  width: 260px; /* Reduced from 300px */
+  z-index: 5;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: visible; /* Allows image to overflow the top boundary of about-card-frame */
+}
+
+.about-card-img {
+  height: 114%; /* Reduced from 128% for a subtle, cleaner overflow */
+  width: auto;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: contrast(1.05) brightness(0.96);
+  transform-origin: bottom center;
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* Hover effect on wrapper that moves circle and portrait */
+.about-card-wrapper:hover .about-card-img {
+  transform: scale(1.02) translateY(-2px); /* Subtle zoom & translate */
+}
+
+.about-card-wrapper:hover .about-card-circle {
+  transform: translate(50%, -50%) scale(1.02);
+  box-shadow: 0 0 50px rgba(158, 123, 102, 0.45);
+}
+
+/* RESPONSIVE STYLING */
+
+@media (max-width: 1100px) {
+  .about-card-circle {
+    right: calc(16% + 115px); /* Aligned exactly behind the 230px portrait in tablet view */
+    width: 340px;
+    height: 340px;
+  }
+  .about-card-img-container {
+    right: 16%;
+    width: 230px;
+  }
+  .about-card-img {
+    height: 112%;
+  }
+}
+
+@media (max-width: 992px) {
+  .about-card-wrapper {
+    height: 560px; /* Taller on tablets to accommodate stacked text */
+  }
+  
+  .about-card-grid {
+    grid-template-columns: 1fr; /* Stack layout */
+    padding: 2rem;
+  }
+  
+  .about-card-details {
+    margin-bottom: 200px; /* Create space for the absolute positioned image below */
+  }
+  
+  .about-card-img-container {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 0;
+    height: 220px;
+    width: 200px;
+  }
+  
+  .about-card-img {
+    height: 122%; /* Compact overflow on stack */
+  }
+  
+  .about-card-circle {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: -10px;
+    transform: translateX(-50%);
+    width: 270px;
+    height: 270px;
+  }
+  
+  .about-card-wrapper:hover .about-card-circle {
+    transform: translateX(-50%) scale(1.02);
+  }
+}
+
+@media (max-width: 576px) {
+  .about-section-container {
+    padding: var(--space-lg) 0;
+  }
+  
+  .about-card-grid {
+    padding: 1.5rem;
+  }
+  
+  .about-card-wrapper {
+    height: 580px;
+  }
+  
+  .about-card-details {
+    margin-bottom: 200px;
+    gap: 0.85rem;
+  }
+  
+  .about-card-objective {
+    font-size: 0.95rem;
+  }
+  
+  .about-btn-book {
+    padding: 0.65rem 1.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+@keyframes moveGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
