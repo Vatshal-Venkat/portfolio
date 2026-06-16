@@ -476,3 +476,97 @@ p {
     box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px var(--accent-glow) !important;
   }
 }
+
+/* Deadpool-inspired Cinematic Visual card */
+.deadpool-wrapper {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin-top: 1rem;
+}
+
+.deadpool-frame {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.deadpool-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  z-index: 1;
+  box-shadow: 0 0 45px rgba(158, 123, 102, 0.35);
+}
+
+.deadpool-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(3.5rem, 7vw, 5.5rem);
+  font-weight: 950;
+  color: #FAF8F5;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  z-index: 2;
+  text-align: center;
+  width: 100%;
+  user-select: none;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+.deadpool-image-container {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.deadpool-image {
+  height: 124%; /* Enlarged & overflowing above the frame */
+  width: auto;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: contrast(1.05) brightness(0.95);
+  transform-origin: bottom center;
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.deadpool-wrapper:hover .deadpool-image {
+  transform: scale(1.04) translateY(-3px);
+}
+
+.deadpool-hud-label {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: #FAF8F5;
+  opacity: 0.6;
+  letter-spacing: 0.15em;
+  z-index: 4;
+}
