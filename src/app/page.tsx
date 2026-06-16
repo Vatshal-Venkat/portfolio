@@ -11,7 +11,7 @@ export default function Home() {
       
       <section id="about" className="section container">
         <h2 className="section-title">Part II. — Career Objective</h2>
-        <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
+        <div className="project-card" style={{ padding: '3rem', textAlign: 'center' }}>
           <p className="h3" style={{ lineHeight: '1.8', maxWidth: '900px', margin: '0 auto', color: 'var(--text-primary)' }}>
             AI Software Engineer with hands-on experience in building Generative AI applications, 
             including RAG pipelines and agentic workflows. Skilled in developing scalable, production-ready 

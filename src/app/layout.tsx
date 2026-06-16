@@ -1,13 +1,13 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-outfit",
 });
 
 export const metadata: Metadata = {
@@ -22,8 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en" className={outfit.className}>
       <body>
+        <div className="cyber-grid" />
         <Navbar />
         <main>
           {children}
