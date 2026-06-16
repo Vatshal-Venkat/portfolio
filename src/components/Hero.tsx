@@ -1,9 +1,31 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./Hero.css";
 
 export default function Hero() {
+  const [mounted, setMounted] = useState(false);
+  const [imgSrc, setImgSrc] = useState("/Vatshal-Venkat.png");
+  const [fallbackCount, setFallbackCount] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleImageError = () => {
+    if (fallbackCount === 0) {
+      setImgSrc("/Venkat-Vatshal.png");
+      setFallbackCount(1);
+    } else if (fallbackCount === 1) {
+      setImgSrc("/vatshal.png");
+      setFallbackCount(2);
+    } else if (fallbackCount === 2) {
+      setImgSrc("/Vatshal1.png");
+      setFallbackCount(3);
+    }
+  };
+
   return (
     <section className="hero-section">
       <div className="container">
@@ -66,11 +88,13 @@ export default function Hero() {
 
           {/* RIGHT COLUMN: INTERACTIVE CINEMATIC POSTER CARD */}
           <div className="hero-visual">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 40 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 1.1, delay: 0.3, ease: "easeOut" }}
-            >
+            {mounted && (
+              <motion.div
+                className="poster-card-wrapper"
+                initial={{ opacity: 0, scale: 0.95, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 1.1, delay: 0.3, ease: "easeOut" }}
+              >
               {/* Gentle floating animation for the poster */}
               <motion.div 
                 className="poster-card"
@@ -109,17 +133,15 @@ export default function Hero() {
                 {/* Portrait Image Container */}
                 <div className="poster-img-container">
                   <img 
-                    src="/Vatshal-Venkat.png" 
+                    src={imgSrc} 
                     alt="Venkat Vatshal Portrait" 
                     className="poster-img"
-                    onError={(e) => {
-                      // Fallback in case of filename variations
-                      e.currentTarget.src = "/Venkat-Vatshal.png";
-                    }}
+                    onError={handleImageError}
                   />
                 </div>
               </motion.div>
             </motion.div>
+          )}
           </div>
 
         </div>
