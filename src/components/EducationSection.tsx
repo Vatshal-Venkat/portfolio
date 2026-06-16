@@ -10,7 +10,7 @@ export default function EducationSection() {
           <div className="timeline-line"></div>
           
           {/* B-Tech */}
-          <div className="timeline-item">
+          <div className="timeline-item timeline-left">
             <div className="timeline-dot"></div>
             <div className="timeline-content">
               <span className="timeline-date">2022 – 2026</span>
@@ -21,7 +21,7 @@ export default function EducationSection() {
           </div>
           
           {/* Intermediate */}
-          <div className="timeline-item">
+          <div className="timeline-item timeline-right">
             <div className="timeline-dot"></div>
             <div className="timeline-content">
               <span className="timeline-date">2020 – 2022</span>
@@ -32,7 +32,7 @@ export default function EducationSection() {
           </div>
           
           {/* Class X */}
-          <div className="timeline-item">
+          <div className="timeline-item timeline-left">
             <div className="timeline-dot"></div>
             <div className="timeline-content">
               <span className="timeline-date">2020</span>
