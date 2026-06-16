@@ -6,6 +6,7 @@ import ProjectsGrid from "@/components/ProjectsGrid";
 import ExperienceList from "@/components/ExperienceList";
 import SkillsSection from "@/components/SkillsSection";
 import EducationSection from "@/components/EducationSection";
+import ContactSection from "@/components/ContactSection";
 
 export default function Home() {
   return (
@@ -32,6 +33,11 @@ export default function Home() {
       <section id="education" className="section container">
         <h2 className="section-title">Part VI. — Education & Certifications</h2>
         <EducationSection />
+      </section>
+
+      <section id="contact" className="section container">
+        <h2 className="section-title">Part VII. — Get In Touch</h2>
+        <ContactSection />
       </section>
     </div>
   );
