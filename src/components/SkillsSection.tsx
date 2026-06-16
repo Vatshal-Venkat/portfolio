@@ -39,8 +39,11 @@ export default function SkillsSection() {
   return (
     <div className="grid grid-cols-2 gap-lg mt-md">
       {skills.map((skillGroup, index) => (
-        <div key={index} className="glass-card">
-          <h3 className="h3 mb-sm text-gradient">{skillGroup.category}</h3>
+        <div key={index} className="project-card">
+          <div className="project-meta">Skill Group // 0{index + 1}</div>
+          <h3 className="project-title text-gradient" style={{ marginBottom: '1.2rem' }}>
+            {skillGroup.category}
+          </h3>
           <div className="flex flex-wrap gap-sm">
             {skillGroup.items.map((item, idx) => (
               <span key={idx} className="badge">
