@@ -29,11 +29,12 @@ export default function ProjectsGrid() {
   return (
     <div className="grid grid-cols-2 gap-lg mt-md">
       {projects.map((project, idx) => (
-        <div key={idx} className="glass-card flex-col" style={{ display: 'flex' }}>
-          <h3 className="h3 text-gradient mb-md" style={{ fontSize: '1.5rem', flexShrink: 0 }}>{project.title}</h3>
-          <ul style={{ listStyleType: 'circle', paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.8rem', color: 'var(--text-secondary)' }}>
+        <div key={idx} className="project-card">
+          <div className="project-meta">Project // 0{idx + 1}</div>
+          <h3 className="project-title text-gradient">{project.title}</h3>
+          <ul className="project-bullet-list">
             {project.bullets.map((bullet, bIdx) => (
-              <li key={bIdx} style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>{bullet}</li>
+              <li key={bIdx} className="project-bullet-item">{bullet}</li>
             ))}
           </ul>
         </div>

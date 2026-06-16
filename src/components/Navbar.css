@@ -10,7 +10,7 @@
 }
 
 .navbar-scrolled {
-  background: rgba(5, 5, 5, 0.8);
+  background: rgba(11, 10, 9, 0.85);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
   height: 70px;
@@ -23,13 +23,35 @@
   color: var(--text-primary);
 }
 
+.navbar-logo a span {
+  color: var(--accent-primary);
+}
+
 .navbar-links a {
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-secondary);
+  position: relative;
+  padding: 0.25rem 0;
   transition: color 0.3s ease;
+}
+
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background-color: var(--accent-primary);
+  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .navbar-links a:hover {
   color: var(--text-primary);
 }
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+

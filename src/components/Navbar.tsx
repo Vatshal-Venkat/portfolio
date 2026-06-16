@@ -18,7 +18,7 @@ export default function Navbar() {
     <header className={`navbar ${scrolled ? "navbar-scrolled" : ""}`}>
       <div className="container flex items-center justify-between" style={{ height: "100%" }}>
         <div className="navbar-logo">
-          <a href="#">Vatshal.</a>
+          <a href="#">Vatshal<span>.</span></a>
         </div>
         <nav className="navbar-links flex gap-md">
           <a href="#about">About</a>

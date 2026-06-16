@@ -2,8 +2,9 @@ export default function EducationSection() {
   return (
     <div className="grid grid-cols-2 gap-lg mt-md">
       {/* Education */}
-      <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
-        <h3 className="h3 text-gradient mb-md">Education</h3>
+      <div className="project-card" style={{ gridColumn: '1 / -1' }}>
+        <div className="project-meta">Academic Path // History</div>
+        <h3 className="project-title text-gradient" style={{ marginBottom: '2rem' }}>Education</h3>
         <div className="flex-col gap-md" style={{ display: 'flex' }}>
           
           <div className="flex justify-between items-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
@@ -15,7 +16,7 @@ export default function EducationSection() {
             <div className="badge">2022 – 2026</div>
           </div>
           
-          <hr style={{ borderColor: 'var(--border-color)', opacity: 0.5 }} />
+          <hr style={{ borderColor: 'var(--border-color)', opacity: 0.5, margin: '1rem 0' }} />
 
           <div className="flex justify-between items-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
             <div>
@@ -26,7 +27,7 @@ export default function EducationSection() {
             <div className="badge">2020 – 2022</div>
           </div>
           
-          <hr style={{ borderColor: 'var(--border-color)', opacity: 0.5 }} />
+          <hr style={{ borderColor: 'var(--border-color)', opacity: 0.5, margin: '1rem 0' }} />
 
           <div className="flex justify-between items-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
             <div>
@@ -40,24 +41,28 @@ export default function EducationSection() {
       </div>
 
       {/* Certifications */}
-      <div className="glass-card">
-        <h3 className="h3 text-gradient mb-md">Certifications</h3>
-        <ul style={{ listStyleType: 'square', paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.8rem', color: 'var(--text-secondary)' }}>
-          <li><strong>DSA with JAVA</strong> (Apna College - 11/2024)</li>
-          <li><strong>IBM Python</strong> (05/2023)</li>
-          <li><strong>CISCO Networking Academy C language</strong> (Cisco - 04/2023)</li>
-          <li><strong>PowerBI</strong> (07/2023)</li>
+      <div className="project-card">
+        <div className="project-meta">Credentials // Verified</div>
+        <h3 className="project-title text-gradient" style={{ marginBottom: '1.5rem' }}>Certifications</h3>
+        <ul className="project-bullet-list">
+          <li className="project-bullet-item"><strong>DSA with JAVA</strong> (Apna College - 11/2024)</li>
+          <li className="project-bullet-item"><strong>IBM Python</strong> (05/2023)</li>
+          <li className="project-bullet-item"><strong>CISCO Networking Academy C language</strong> (Cisco - 04/2023)</li>
+          <li className="project-bullet-item"><strong>PowerBI</strong> (07/2023)</li>
         </ul>
       </div>
 
       {/* Organizations & Hobbies */}
-      <div className="glass-card">
-        <h3 className="h3 text-gradient mb-md">Organizations & Hobbies</h3>
+      <div className="project-card">
+        <div className="project-meta">Life // Beyond Code</div>
+        <h3 className="project-title text-gradient" style={{ marginBottom: '1.5rem' }}>Organizations & Hobbies</h3>
         
         <div className="mb-md">
           <p className="text-primary" style={{ fontWeight: 600 }}>TEDxVJIT</p>
           <p className="text-secondary" style={{ fontSize: '0.95rem' }}>Core Team Member - Hospitality & Management</p>
         </div>
+
+        <hr style={{ borderColor: 'var(--border-color)', opacity: 0.3, margin: '1rem 0' }} />
 
         <div>
           <p className="text-primary mb-sm" style={{ fontWeight: 600 }}>Hobbies</p>

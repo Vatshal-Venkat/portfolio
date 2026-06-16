@@ -4,5 +4,223 @@
   overflow: hidden;
   display: flex;
   align-items: center;
+  padding-top: 100px;
+  padding-bottom: 60px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: center;
+  gap: var(--space-xl);
+  width: 100%;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  z-index: 2;
+}
+
+.hero-badge {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  color: var(--accent-primary);
+  background: rgba(158, 123, 102, 0.08);
+  border: 1px solid rgba(158, 123, 102, 0.2);
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  margin-bottom: var(--space-md);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-badge-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-primary);
+}
+
+.hero-title-container {
+  margin-bottom: var(--space-sm);
+}
+
+.hero-title {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.hero-subtitle {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  letter-spacing: -0.02em;
+}
+
+.hero-description {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 540px;
+  margin-bottom: var(--space-lg);
+  line-height: 1.7;
+}
+
+.hero-cta {
+  display: flex;
+  gap: var(--space-md);
+}
+
+/* === CINEMATIC POSTER CARD === */
+.hero-visual {
+  display: flex;
   justify-content: center;
+  align-items: center;
+  z-index: 2;
+  perspective: 1000px;
+}
+
+.poster-card {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 3 / 4.3;
+  background: rgba(19, 16, 14, 0.6);
+  border: 1px solid rgba(250, 248, 245, 0.06);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(158, 123, 102, 0.03);
+  transition: border-color 0.5s ease;
+}
+
+.poster-card:hover {
+  border-color: rgba(158, 123, 102, 0.35);
+}
+
+.poster-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(158, 123, 102, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.poster-img-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 85%;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.poster-img {
+  width: 90%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  filter: contrast(1.05) brightness(0.95);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.poster-card:hover .poster-img {
+  transform: scale(1.03) translateY(-5px);
+}
+
+/* Sci-fi Overlay HUD Elements */
+.poster-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--accent-primary);
+  opacity: 0.85;
+  letter-spacing: 0.1em;
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(158, 123, 102, 0.15);
+  padding-bottom: 6px;
+}
+
+.hud-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px dashed rgba(158, 123, 102, 0.15);
+  padding-top: 6px;
+}
+
+.hud-tech-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.hud-barcode {
+  font-size: 0.9rem;
+  letter-spacing: -1px;
+  line-height: 1;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+}
+
+/* Decorative Framing Lines */
+.poster-frame {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(158, 123, 102, 0.05);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    text-align: center;
+  }
+
+  .hero-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero-description {
+    margin: 0 auto var(--space-lg) auto;
+  }
+
+  .hero-visual {
+    margin-top: var(--space-md);
+  }
 }
