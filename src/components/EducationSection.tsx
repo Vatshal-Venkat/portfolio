@@ -5,10 +5,10 @@ export default function EducationSection() {
       <div className="project-card" style={{ gridColumn: '1 / -1' }}>
         <div className="project-meta">Academic Path // History</div>
         <h3 className="project-title text-gradient" style={{ marginBottom: '2.5rem' }}>Education</h3>
-        
+
         <div className="timeline-container">
           <div className="timeline-line"></div>
-          
+
           {/* B-Tech */}
           <div className="timeline-item timeline-left">
             <div className="timeline-dot"></div>
@@ -16,10 +16,10 @@ export default function EducationSection() {
               <span className="timeline-date">2022 – 2026</span>
               <h4 className="text-primary" style={{ fontWeight: 600, fontSize: '1.25rem' }}>B-Tech, Artificial Intelligence</h4>
               <p className="text-muted" style={{ fontSize: '0.95rem', marginTop: '0.2rem' }}>VIDYA JYOTHI INSTITUTE OF TECHNOLOGY</p>
-              <p className="text-secondary mt-sm" style={{ fontSize: '0.9rem' }}>Current CGPA - 8.80 (till 7th semester)</p>
+              <p className="text-secondary mt-sm" style={{ fontSize: '0.9rem' }}>CGPA - 8.82</p>
             </div>
           </div>
-          
+
           {/* Intermediate */}
           <div className="timeline-item timeline-right">
             <div className="timeline-dot"></div>
@@ -30,7 +30,7 @@ export default function EducationSection() {
               <p className="text-secondary mt-sm" style={{ fontSize: '0.9rem' }}>Percentage - 92.2%</p>
             </div>
           </div>
-          
+
           {/* Class X */}
           <div className="timeline-item timeline-left">
             <div className="timeline-dot"></div>
@@ -60,7 +60,7 @@ export default function EducationSection() {
       <div className="project-card">
         <div className="project-meta">Life // Beyond Code</div>
         <h3 className="project-title text-gradient" style={{ marginBottom: '1.5rem' }}>Organizations & Hobbies</h3>
-        
+
         <div className="mb-md">
           <p className="text-primary" style={{ fontWeight: 600 }}>TEDxVJIT</p>
           <p className="text-secondary" style={{ fontSize: '0.95rem' }}>Core Team Member - Hospitality & Management</p>
