@@ -6,25 +6,10 @@ import "./Hero.css";
 
 export default function Hero() {
   const [mounted, setMounted] = useState(false);
-  const [imgSrc, setImgSrc] = useState("/Vatshal-Venkat.png");
-  const [fallbackCount, setFallbackCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const handleImageError = () => {
-    if (fallbackCount === 0) {
-      setImgSrc("/Venkat-Vatshal.png");
-      setFallbackCount(1);
-    } else if (fallbackCount === 1) {
-      setImgSrc("/vatshal.png");
-      setFallbackCount(2);
-    } else if (fallbackCount === 2) {
-      setImgSrc("/Vatshal1.png");
-      setFallbackCount(3);
-    }
-  };
 
   return (
     <section className="hero-section">
@@ -133,10 +118,20 @@ export default function Hero() {
                 {/* Portrait Image Container */}
                 <div className="poster-img-container">
                   <img 
-                    src={imgSrc} 
-                    alt="Venkat Vatshal Portrait" 
-                    className="poster-img"
-                    onError={handleImageError}
+                    src="/Vatshal-Venkat.png" 
+                    alt="Venkat Vatshal Portrait Default" 
+                    className="poster-img-default"
+                    onError={(e) => {
+                      e.currentTarget.src = "/vatshal.png";
+                    }}
+                  />
+                  <img 
+                    src="/Venkat-Vatshal.png" 
+                    alt="Venkat Vatshal Portrait Hover" 
+                    className="poster-img-hover"
+                    onError={(e) => {
+                      e.currentTarget.src = "/Vatshal1.png";
+                    }}
                   />
                 </div>
               </motion.div>
