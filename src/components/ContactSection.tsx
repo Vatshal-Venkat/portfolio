@@ -170,7 +170,7 @@ export default function ContactSection() {
                   id="name"
                   required
                   className="contact-input"
-                  placeholder="e.g. John Doe"
+                  
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -183,7 +183,7 @@ export default function ContactSection() {
                   id="email"
                   required
                   className="contact-input"
-                  placeholder="e.g. john@example.com"
+                  
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -195,7 +195,7 @@ export default function ContactSection() {
                   type="text"
                   id="subject"
                   className="contact-input"
-                  placeholder="e.g. Collaboration Offer"
+                  
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                 />
@@ -207,7 +207,7 @@ export default function ContactSection() {
                   id="message"
                   required
                   className="contact-textarea"
-                  placeholder="Construct your message..."
+                  
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                 />
