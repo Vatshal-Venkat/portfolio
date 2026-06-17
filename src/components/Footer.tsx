@@ -11,10 +11,10 @@ export default function Footer() {
           <a href="tel:7989157997" className="footer-link">
             +91 7989157997
           </a>
-          <a href="#" className="footer-link">
+          <a href="https://www.linkedin.com/in/venkat-vatshal/" className="footer-link">
             LinkedIn
           </a>
-          <a href="#" className="footer-link">
+          <a href="https://github.com/Vatshal-Venkat" className="footer-link">
             GitHub
           </a>
         </div>
