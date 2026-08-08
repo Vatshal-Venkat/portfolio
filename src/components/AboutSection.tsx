@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import "./AboutSection.css";
 
@@ -58,7 +59,7 @@ export default function AboutSection() {
               </div>
               
               <div className="about-card-cta">
-                <a href="#contact" className="about-btn-book">
+                <a href="/#contact" className="about-btn-book">
                   Connect Now <span className="about-btn-arrow">↗</span>
                 </a>
               </div>
@@ -71,12 +72,14 @@ export default function AboutSection() {
 
         {/* Overflowing portrait image container (Outside frame so it can overflow top edge) */}
         <div className="about-card-img-container">
-          <img
+          <Image
             src="/vatshal.png"
             alt="Venkat Vatshal"
             className="about-card-img"
+            width={260}
+            height={440}
             onError={(e) => {
-              e.currentTarget.src = "/Vatshal1.png";
+              (e.target as HTMLImageElement).src = "/Vatshal1.png";
             }}
           />
         </div>

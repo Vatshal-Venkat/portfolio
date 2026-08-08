@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import "./Hero.css";
 
@@ -117,20 +118,25 @@ export default function Hero() {
 
                 {/* Portrait Image Container */}
                 <div className="poster-img-container">
-                  <img 
+                  <Image 
                     src="/Vatshal-Venkat.png" 
                     alt="Venkat Vatshal Portrait Default" 
                     className="poster-img-default"
+                    width={360}
+                    height={480}
+                    priority
                     onError={(e) => {
-                      e.currentTarget.src = "/vatshal.png";
+                      (e.target as HTMLImageElement).src = "/vatshal.png";
                     }}
                   />
-                  <img 
+                  <Image 
                     src="/Venkat-Vatshal.png" 
                     alt="Venkat Vatshal Portrait Hover" 
                     className="poster-img-hover"
+                    width={360}
+                    height={480}
                     onError={(e) => {
-                      e.currentTarget.src = "/Vatshal1.png";
+                      (e.target as HTMLImageElement).src = "/Vatshal1.png";
                     }}
                   />
                 </div>
