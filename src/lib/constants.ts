@@ -98,7 +98,7 @@ export const PROJECTS_DATA: ProjectItem[] = [
   {
     id: "online_exam",
     slug: "online_exam",
-    title: "Online Examination Portal (VJITPREP)",
+    title: "Online Examination Portal",
     subtitle: "Scalable full-stack assessment platform with automated evaluation, anti-cheating detection, and analytics.",
     shortDescription: "Full-stack application built in WixStudio and Node.js featuring dynamic exam generation, anti-cheating tracking, automated evaluation, and real-time performance leaderboards.",
     bullets: [
