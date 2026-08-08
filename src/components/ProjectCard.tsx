@@ -1,7 +1,8 @@
 "use client";
+
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { FiGithub, FiPlay } from "react-icons/fi";
+import { FiGithub, FiExternalLink, FiArrowRight } from "react-icons/fi";
 
 interface ProjectCardProps {
   title: string;
@@ -9,9 +10,11 @@ interface ProjectCardProps {
   href: string;
   techStack?: string[];
   features?: string[];
+  liveUrl?: string;
   githubUrl?: string;
   accentColor?: string;
   index: number;
+  category?: string;
 }
 
 export default function ProjectCard({
@@ -20,9 +23,11 @@ export default function ProjectCard({
   href,
   techStack,
   features,
+  liveUrl,
   githubUrl,
   accentColor = "from-teal-400 to-emerald-500",
   index,
+  category = "Featured Project",
 }: ProjectCardProps) {
   return (
     <motion.div
@@ -30,92 +35,102 @@ export default function ProjectCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, delay: index * 0.1 }}
-      className="group relative flex flex-col h-full bg-[#111827]/80 rounded-2xl overflow-hidden border border-white/5 backdrop-blur-sm"
+      className="group relative flex flex-col h-full bg-[#111827]/80 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-sm shadow-2xl hover:border-white/20 transition-all duration-300"
     >
-      {/* Top Accent Border */}
+      {/* Top Accent Line */}
       <div className={`h-1.5 w-full bg-gradient-to-r ${accentColor}`} />
 
-      <div className="p-8 md:p-10 flex flex-col h-full">
-        {/* Header: Title & GitHub */}
-        <div className="flex justify-between items-start mb-6">
-          <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+      <div className="p-7 md:p-9 flex flex-col h-full justify-between">
+        <div>
+          {/* Header Tag & Category */}
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-[11px] font-mono tracking-widest text-[#9E7B66] uppercase font-bold">
+              Project // 0{index + 1} • {category}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-4 group-hover:text-[#9E7B66] transition-colors">
             {title}
           </h3>
-          {githubUrl && (
-            <a
-              href={githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all cursor-pointer"
-            >
-              <FiGithub className="w-5 h-5" />
-            </a>
+
+          {/* Short Description */}
+          <p className="text-white/70 text-sm md:text-base leading-relaxed mb-6">
+            {description}
+          </p>
+
+          {/* Key Features List */}
+          {features && features.length > 0 && (
+            <div className="mb-6">
+              <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] mb-3">
+                Highlights & Capabilities
+              </h4>
+              <ul className="space-y-2">
+                {features.slice(0, 3).map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-white/80 text-xs md:text-sm">
+                    <span className="text-[#9E7B66] font-bold">—</span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
-        </div>
 
-        {/* Description */}
-        <p className="text-white/60 text-sm md:text-base leading-relaxed mb-8">
-          {description}
-        </p>
-
-        {/* Key Features */}
-        {features && features.length > 0 && (
+          {/* Tech Stack Pills */}
           <div className="mb-8">
-            <h4 className="text-[#3b82f6] text-sm font-bold mb-4 uppercase tracking-wider">
-              Key Features
+            <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] mb-3">
+              Technologies
             </h4>
-            <ul className="space-y-3">
-              {features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-3 text-white/80 text-sm">
-                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
-                  <span>{feature}</span>
-                </li>
+            <div className="flex flex-wrap gap-2">
+              {techStack?.map((tech, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 text-[11px] font-semibold tracking-tight hover:bg-white/10 hover:text-white transition-colors"
+                >
+                  {tech}
+                </span>
               ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Tech Stack */}
-        <div className="mb-10">
-          <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-            Tech Stack
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {techStack?.map((tech, i) => (
-              <span
-                key={i}
-                className="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-white/60 text-[11px] font-bold tracking-tight hover:bg-white/10 transition-colors"
-              >
-                {tech}
-              </span>
-            ))}
+            </div>
           </div>
         </div>
 
-        {/* Project View & Media Preview */}
-        <div className="mt-auto space-y-6">
+        {/* Action Button Bar: Live Link, GitHub Link, Deep Dive */}
+        <div className="pt-6 border-t border-white/10 flex flex-col gap-4">
+          {/* External Action Buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            {liveUrl && (
+              <a
+                href={liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#FAF8F5] text-[#0B0A09] text-xs font-bold tracking-wide hover:bg-[#9E7B66] hover:text-white transition-all transform hover:-translate-y-0.5 shadow-lg"
+              >
+                <FiExternalLink className="w-4 h-4" />
+                Live Demo ↗
+              </a>
+            )}
+
+            {githubUrl && (
+              <a
+                href={githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 border border-white/15 text-white text-xs font-bold tracking-wide hover:bg-white/20 transition-all transform hover:-translate-y-0.5"
+              >
+                <FiGithub className="w-4 h-4" />
+                GitHub Repo 🐙
+              </a>
+            )}
+          </div>
+
+          {/* Internal Deep Dive Navigation Link */}
           <Link
             href={href}
-            className="flex items-center gap-2 text-emerald-400 text-sm font-bold hover:gap-4 transition-all"
+            className="inline-flex items-center gap-2 text-[#9E7B66] hover:text-white text-xs md:text-sm font-bold tracking-wider uppercase group/link transition-colors pt-1"
           >
-            <FiPlay className="w-5 h-5" />
-            My Complete Project Overview
+            <span>Explore Detailed Architecture & Deep-Dive</span>
+            <FiArrowRight className="w-4 h-4 transform group-hover/link:translate-x-1 transition-transform" />
           </Link>
-
-          {/* Media Placeholder Area */}
-          <div className="group/visual relative w-full aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/5 flex items-center justify-center">
-            {/* Dynamic Ambient Blur */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${accentColor} opacity-5 group-hover/visual:opacity-10 transition-opacity`} />
-
-            {/* Center Label */}
-            <div className="flex flex-col items-center gap-2 text-white/20 group-hover/visual:text-white/40 transition-colors">
-              <FiPlay className="w-10 h-10" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Phase {String(index + 1).padStart(2, '0')} / Preview</span>
-            </div>
-
-            {/* Inner Border Overlay */}
-            <div className="absolute inset-0 border border-white/5 rounded-xl pointer-events-none" />
-          </div>
         </div>
       </div>
     </motion.div>
