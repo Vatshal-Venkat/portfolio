@@ -1,0 +1,401 @@
+/* ==========================================================================
+   SPIDER-MAN WEB SKILLS MATRIX — ELEGANT BROWN & SILVER THEME
+   ========================================================================== */
+
+.spiderman-web-section {
+  position: relative;
+  width: 100%;
+  min-height: 740px;
+  background: radial-gradient(circle at 50% 45%, #18110b 0%, #0e0906 60%, #070403 100%);
+  border: 1px solid rgba(180, 83, 9, 0.25);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 0 100px rgba(180, 83, 9, 0.06);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Background Subtle Mesh */
+.spiderman-web-bg-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(217, 119, 6, 0.06) 0%, transparent 70%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 50px 50px, 50px 50px;
+  z-index: 1;
+}
+
+/* Top Control Header Panel (Separated cleanly from Canvas) */
+.spider-top-panel {
+  position: relative;
+  z-index: 25;
+  padding: 1.25rem 1.75rem 0.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: linear-gradient(to bottom, rgba(14, 9, 6, 0.95) 0%, rgba(14, 9, 6, 0) 100%);
+}
+
+.spider-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spider-title-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spider-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(180, 83, 9, 0.18);
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(217, 119, 6, 0.2);
+}
+
+.spider-main-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fef3c7;
+  margin: 0;
+}
+
+.spider-main-subtitle {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.spider-status-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #d1d5db;
+  background: rgba(28, 19, 13, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+}
+
+/* Category Filters Bar */
+.spider-category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.spider-cat-btn {
+  background: rgba(24, 16, 11, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+  padding: 0.35rem 0.8rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.spider-cat-btn:hover {
+  background: rgba(180, 83, 9, 0.25);
+  border-color: rgba(217, 119, 6, 0.5);
+  color: #fef3c7;
+}
+
+.spider-cat-btn.active {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.4), rgba(120, 53, 15, 0.5));
+  border-color: #d97706;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(217, 119, 6, 0.3);
+}
+
+/* Main Canvas Viewport Area */
+.spider-canvas-viewport {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 520px;
+}
+
+.spider-web-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* HTML Overlay Nodes Layer */
+.spider-nodes-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.spider-node-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Hidden by default when nothing is hovered */
+.spider-node-item.is-hidden-default {
+  opacity: 0;
+  pointer-events: auto; /* keep hit box accessible */
+}
+
+.spider-node-item.is-dimmed {
+  opacity: 0.12 !important;
+  pointer-events: none;
+}
+
+/* Center Spider Web Hub */
+.center-spider-hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #b45309 0%, #78350f 70%, #451a03 100%);
+  border: 1.5px solid rgba(254, 243, 199, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fef3c7;
+  box-shadow: 0 0 20px rgba(180, 83, 9, 0.5), 0 0 40px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+}
+
+.center-spider-hub:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 0 30px rgba(217, 119, 6, 0.8);
+}
+
+/* Node Badge Styling (Warm Brown / Bronze Accent) */
+.spider-node-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  background: rgba(18, 12, 8, 0.94);
+  border: 1px solid rgba(156, 163, 175, 0.3);
+  backdrop-filter: blur(8px);
+  color: #e5e7eb;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spider-node-icon {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d97706;
+}
+
+/* Active Hover Node */
+.spider-node-item.is-active .spider-node-badge {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.95), rgba(120, 53, 15, 0.95));
+  border-color: #f59e0b;
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(217, 119, 6, 0.7);
+  transform: scale(1.12);
+}
+
+.spider-node-item.is-active .spider-node-icon {
+  color: #ffffff;
+}
+
+/* Related Connected Node */
+.spider-node-item.is-related .spider-node-badge {
+  background: rgba(28, 18, 12, 0.95);
+  border-color: rgba(217, 119, 6, 0.7);
+  color: #fef3c7;
+  box-shadow: 0 0 15px rgba(217, 119, 6, 0.4);
+  transform: scale(1.05);
+}
+
+.spider-node-item.is-related .spider-node-icon {
+  color: #f59e0b;
+}
+
+/* Bottom Floating Detail Card */
+.spider-hud-card {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 3rem);
+  max-width: 620px;
+  background: rgba(18, 12, 8, 0.94);
+  border: 1px solid rgba(217, 119, 6, 0.5);
+  border-radius: 14px;
+  padding: 0.9rem 1.3rem;
+  z-index: 30;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85), 0 0 25px rgba(180, 83, 9, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  animation: hudFadeIn 0.25s ease-out;
+}
+
+@keyframes hudFadeIn {
+  0% { opacity: 0; transform: translate(-50%, 12px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.spider-hud-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spider-hud-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.spider-hud-card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(180, 83, 9, 0.2);
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+.spider-hud-card-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fef3c7;
+  margin: 0;
+}
+
+.spider-hud-card-cat {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #d97706;
+  background: rgba(180, 83, 9, 0.15);
+  padding: 0.18rem 0.55rem;
+  border-radius: 10px;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.spider-hud-card-desc {
+  font-size: 0.8rem;
+  color: rgba(229, 231, 235, 0.85);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.spider-hud-related-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+.related-tag-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  margin-right: 0.2rem;
+}
+
+.related-tag-pill {
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d1d5db;
+  padding: 0.12rem 0.5rem;
+  border-radius: 8px;
+}
+
+/* Helper Hint Overlay when nothing is hovered */
+.spider-web-hint {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 12, 8, 0.82);
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  padding: 0.4rem 1.1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  color: rgba(209, 213, 219, 0.75);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .spiderman-web-section {
+    min-height: 660px;
+  }
+
+  .spider-top-panel {
+    padding: 1rem 1rem 0.25rem 1rem;
+  }
+
+  .spider-node-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .spider-hud-card {
+    width: calc(100% - 1.5rem);
+    padding: 0.75rem 0.9rem;
+    bottom: 0.75rem;
+  }
+}
