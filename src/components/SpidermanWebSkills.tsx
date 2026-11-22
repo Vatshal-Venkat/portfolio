@@ -18,6 +18,9 @@ import {
   type WebModel,
   type Brush,
 } from "./spiderweb/engine";
+import { WebIntro, T as INTRO, type OrbPos } from "./spiderweb/intro";
+import { HairlineOverlay, type HairlineOverlayHandle } from "./spiderweb/HairlineOverlay";
+import { ThinkingOrb } from "thinking-orbs";
 
 import {
   FaBrain,
@@ -53,6 +56,7 @@ import {
   SiOpenai,
 } from "react-icons/si";
 import { GiSpiderWeb } from "react-icons/gi";
+import { FiRotateCcw } from "react-icons/fi";
 
 export interface SkillNode {
   id: string;
@@ -467,16 +471,39 @@ interface Engine {
   lightX: number;
   W: number;
   H: number;
+  /** intro state, shared with pointer handlers */
+  introDone: boolean;
+  startRequested: boolean;
+  replayRequested: boolean;
 }
 
 const bottomReserveFor = (w: number) => (w < 640 ? 150 : 128);
 
+/** Centre a thinking-orb wrapper on a canvas point (or hide it). */
+function placeOrb(el: HTMLDivElement | null, pos: OrbPos | null, size: number) {
+  if (!el) return;
+  if (!pos || pos.a <= 0.01) {
+    el.style.opacity = "0";
+    return;
+  }
+  el.style.opacity = pos.a.toFixed(3);
+  el.style.transform = `translate3d(${(pos.x - size / 2).toFixed(1)}px, ${(pos.y - size / 2).toFixed(1)}px, 0)`;
+}
+
 export default function SpidermanWebSkills() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [introDone, setIntroDone] = useState(false);
+  const [introPlaying, setIntroPlaying] = useState(false);
+  const [vpSize, setVpSize] = useState({ w: 0, h: 0 });
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const topCanvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HairlineOverlayHandle>(null);
+  const shotOrbRef = useRef<HTMLDivElement>(null);
+  const hubOrbRef = useRef<HTMLDivElement>(null);
+  const spiralOrbRef = useRef<HTMLDivElement>(null);
   const hubRef = useRef<HTMLButtonElement>(null);
   const labelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const engineRef = useRef<Engine>({
@@ -486,6 +513,9 @@ export default function SpidermanWebSkills() {
     lightX: 0.5,
     W: 0,
     H: 0,
+    introDone: false,
+    startRequested: false,
+    replayRequested: false,
   });
 
   const activeSet = useMemo(() => {
@@ -514,8 +544,10 @@ export default function SpidermanWebSkills() {
   useEffect(() => {
     const viewport = viewportRef.current;
     const canvas = canvasRef.current;
+    const topCanvas = topCanvasRef.current;
     const ctx = canvas?.getContext("2d");
-    if (!viewport || !canvas || !ctx) return;
+    const topCtx = topCanvas?.getContext("2d");
+    if (!viewport || !canvas || !ctx || !topCanvas || !topCtx) return;
 
     const eng = engineRef.current;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -531,6 +563,19 @@ export default function SpidermanWebSkills() {
     let last = performance.now();
     let t = 0;
     let dpr = 1;
+    let intro: WebIntro | null = null;
+    let introStart: number | null = null;
+
+    const finishIntro = () => {
+      eng.introDone = true;
+      introStart = null;
+      eng.model?.reveal.fill(1);
+      eng.spider?.land();
+      setIntroDone(true);
+      setIntroPlaying(false);
+      overlayRef.current?.set(null);
+    };
+    if (reduceMotion) finishIntro();
 
     const nodeIndex = (s: SkillNode) => eng.model!.grid[s.spoke % SPOKES][s.ring];
 
@@ -546,13 +591,16 @@ export default function SpidermanWebSkills() {
       const W = Math.max(1, Math.round(rect.width));
       const H = Math.max(1, Math.round(rect.height));
       dpr = Math.min(2, window.devicePixelRatio || 1);
-      canvas.width = Math.round(W * dpr);
-      canvas.height = Math.round(H * dpr);
+      canvas.width = topCanvas.width = Math.round(W * dpr);
+      canvas.height = topCanvas.height = Math.round(H * dpr);
       eng.W = W;
       eng.H = H;
+      setVpSize({ w: W, h: H });
       eng.model = buildWeb(W, H, bottomReserveFor(W));
       const hub = eng.model.points[eng.model.hub];
       eng.spider = new Spider(hub.x, hub.y, eng.model.scale);
+      intro = new WebIntro(eng.model);
+      eng.model.reveal.fill(eng.introDone ? 1 : 0);
       paths = [];
       pathKey = "";
       measure();
@@ -562,9 +610,14 @@ export default function SpidermanWebSkills() {
       needsResize = true;
     });
     ro.observe(viewport);
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-    });
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        // play the web-shooter intro once the web is properly in view
+        if (entry.intersectionRatio >= 0.35 && !eng.introDone && introStart === null) eng.startRequested = true;
+      },
+      { threshold: [0, 0.35] }
+    );
     io.observe(viewport);
     document.fonts?.ready.then(measure).catch(() => {});
 
@@ -679,11 +732,32 @@ export default function SpidermanWebSkills() {
         resize();
       }
       const m = eng.model;
-      const spider = eng.spider;
-      if (!visible || !m || !spider) {
+      if (!visible || !m || !eng.spider || !intro) {
         last = now;
         return;
       }
+
+      if (eng.replayRequested) {
+        eng.replayRequested = false;
+        eng.introDone = false;
+        const hub0 = m.points[m.hub];
+        eng.spider = new Spider(hub0.x, hub0.y, m.scale);
+        intro = new WebIntro(m);
+        m.reveal.fill(0);
+        eng.startRequested = true;
+      }
+      if (eng.startRequested) {
+        eng.startRequested = false;
+        introStart = now;
+        setIntroPlaying(true);
+      }
+      const it = introStart === null ? (eng.introDone ? Infinity : -1) : now - introStart;
+      if (!eng.introDone) {
+        if (it >= INTRO.TOTAL) finishIntro();
+        else if (it >= 0) intro.apply(it);
+      }
+      const inIntro = !eng.introDone;
+      const sp = eng.spider;
 
       const elapsed = Math.min(64, now - last);
       last = now;
@@ -706,7 +780,7 @@ export default function SpidermanWebSkills() {
       renderSilk(ctx, m, light, dimMul);
       renderDew(ctx, m, light, dimMul);
 
-      syncPaths();
+      if (!inIntro) syncPaths();
       paths = paths.filter((p) => !(p.dying && p.alpha < 0.01));
       paths.forEach((p) => {
         p.alpha += ((p.dying ? 0 : 1) - p.alpha) * (p.dying ? 0.15 : 0.12);
@@ -714,18 +788,49 @@ export default function SpidermanWebSkills() {
         renderPath(ctx, m, p.path, reveal, p.alpha, t, p.phase);
       });
 
-      layoutLabels();
+      if (!inIntro) layoutLabels();
 
       ALL_SKILLS.forEach((s, i) => {
         const target = s.id === hovered ? 3 : lit.has(s.id) ? 2 : isFocus ? 0.4 : 1;
         beadLevel[i] += (target - beadLevel[i]) * 0.14;
-        const p = m.points[nodeIndex(s)];
-        renderBead(ctx, p.x, p.y, beadLevel[i], t, i, m.scale);
+        const idx = nodeIndex(s);
+        const p = m.points[idx];
+        const pop = inIntro ? (it < 0 ? 0 : intro!.beadPop(idx, it)) : 1;
+        if (pop <= 0) return;
+        if (pop === 1) {
+          renderBead(ctx, p.x, p.y, beadLevel[i], t, i, m.scale);
+        } else {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.scale(pop, pop);
+          renderBead(ctx, 0, 0, beadLevel[i], t, i, m.scale);
+          ctx.restore();
+        }
       });
 
-      const faceTo = hovered ? m.points[nodeIndex(SKILL_BY_ID[hovered])] : null;
-      spider.update(m, now, faceTo, reduceMotion);
-      spider.draw(ctx, m);
+      // Top layer: the spider walks above the skill labels; the intro's
+      // hand, strand and thinking orbs are drawn here too.
+      topCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      topCtx.clearRect(0, 0, eng.W, eng.H);
+      if (inIntro && it >= 0) {
+        intro.draw(topCtx, it, t);
+        overlayRef.current?.set(intro.overlay(it, ALL_SKILLS.length));
+        const o = intro.orbs(it);
+        placeOrb(shotOrbRef.current, o.shot, 32);
+        placeOrb(hubOrbRef.current, o.hub, 64);
+        placeOrb(spiralOrbRef.current, o.spiral, 20);
+      }
+
+      if (!inIntro || it >= INTRO.DROP) {
+        if (inIntro) {
+          const hubP = m.points[m.hub];
+          if (it < INTRO.DROP_END) sp.setDrop(hubP.x, intro.dropY(it));
+          else sp.land();
+        }
+        const faceTo = hovered ? m.points[nodeIndex(SKILL_BY_ID[hovered])] : null;
+        sp.update(m, now, faceTo, reduceMotion);
+        sp.draw(topCtx, m);
+      }
 
       const hub = m.points[m.hub];
       if (hubRef.current) {
@@ -748,7 +853,7 @@ export default function SpidermanWebSkills() {
   };
 
   const isUiTarget = (target: EventTarget) =>
-    target instanceof Element && !!target.closest(".sw-card, .sw-label, .sw-hub");
+    target instanceof Element && !!target.closest(".sw-card, .sw-label, .sw-hub, .sw-replay");
 
   const findSkillNear = useCallback((x: number, y: number, radius: number) => {
     const m = engineRef.current.model;
@@ -768,6 +873,7 @@ export default function SpidermanWebSkills() {
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const eng = engineRef.current;
+    if (!eng.introDone) return;
     const { x, y } = localPoint(e);
     const b = eng.brush;
     if (b.on) {
@@ -797,7 +903,7 @@ export default function SpidermanWebSkills() {
     if (isUiTarget(e.target)) return;
     const eng = engineRef.current;
     const m = eng.model;
-    if (!m) return;
+    if (!m || !eng.introDone) return;
     const { x, y } = localPoint(e);
     const near = findSkillNear(x, y, e.pointerType === "mouse" ? 22 : 30);
     if (near) {
@@ -819,6 +925,12 @@ export default function SpidermanWebSkills() {
   const resetView = () => {
     setHoveredId(null);
     setActiveCategory("ALL");
+  };
+
+  const replayIntro = () => {
+    resetView();
+    setIntroDone(false);
+    engineRef.current.replayRequested = true;
   };
 
   return (
@@ -876,6 +988,39 @@ export default function SpidermanWebSkills() {
         onPointerDown={handlePointerDown}
       >
         <canvas ref={canvasRef} className="sw-canvas" aria-hidden />
+        <canvas ref={topCanvasRef} className="sw-canvas sw-canvas-top" aria-hidden />
+
+        <HairlineOverlay ref={overlayRef} width={vpSize.w} height={vpSize.h} />
+
+        {introPlaying && (
+          <div className="sw-orbs" aria-hidden>
+            <div ref={shotOrbRef} className="sw-orb">
+              <ThinkingOrb state="weaving" size={32} theme="dark" speed={1.4} />
+            </div>
+            <div ref={hubOrbRef} className="sw-orb">
+              <ThinkingOrb state="connecting" size={64} theme="dark" speed={1.2} />
+            </div>
+            <div ref={spiralOrbRef} className="sw-orb">
+              <ThinkingOrb state="weaving" size={20} theme="dark" speed={1.6} />
+            </div>
+          </div>
+        )}
+
+        {introPlaying && (
+          <p className="sw-caption" role="status">
+            <span className="sw-caption-sfx">Thwip!</span> Spider-Man is spinning every skill into one web
+          </p>
+        )}
+
+        <button
+          type="button"
+          className={`sw-replay${introDone ? " is-ready" : ""}`}
+          onClick={replayIntro}
+          aria-label="Replay the web-shooter animation"
+          tabIndex={introDone ? 0 : -1}
+        >
+          <FiRotateCcw aria-hidden /> Replay
+        </button>
 
         <button ref={hubRef} type="button" className="sw-hub" onClick={resetView} aria-label="Reset skill web" title="Reset view" />
 
@@ -929,7 +1074,7 @@ export default function SpidermanWebSkills() {
             </div>
           </div>
         ) : (
-          <div className="sw-hint">
+          <div className={`sw-hint${introDone ? " is-ready" : ""}`}>
             <span className="sw-hint-dot" aria-hidden />
             {activeCategory === "ALL"
               ? "Hover a glowing knot · click the silk to pluck it"

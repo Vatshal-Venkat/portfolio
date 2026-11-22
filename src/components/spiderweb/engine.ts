@@ -637,8 +637,9 @@ interface Leg {
   p: number;
 }
 
-const LEG_ANGLES = [0.62, 1.22, 1.98, 2.58];
-const LEG_REACH = [2.75, 2.25, 1.95, 2.5];
+// Orb-weaver posture: legs I & II reach forward, III short and sideways, IV trail back.
+const LEG_ANGLES = [0.42, 0.95, 1.78, 2.55];
+const LEG_REACH = [3.7, 3.1, 2.0, 2.9];
 
 export class Spider {
   x: number;
@@ -657,7 +658,7 @@ export class Spider {
   constructor(x: number, y: number, scale: number) {
     this.x = x;
     this.y = y;
-    this.u = 9.5 * scale;
+    this.u = 9.6 * scale;
     for (const side of [-1, 1]) {
       for (let i = 0; i < 4; i++) {
         const leg: Leg = { side, i, group: (i + (side > 0 ? 1 : 0)) % 2, tx: 0, ty: 0, fx: 0, fy: 0, p: -1 };
@@ -715,7 +716,7 @@ export class Spider {
       this.vy *= 0.6;
       if (this.mode === "inspect" && now > this.until) this.mode = "return";
     } else {
-      const maxV = (calm ? 1.4 : 2.9) * (this.u / 9.5);
+      const maxV = (calm ? 1.4 : 2.9) * (this.u / 9.6);
       const sp = Math.min(maxV, dist * 0.09 + 0.4);
       this.vx += ((dx / dist) * sp - this.vx) * 0.12;
       this.vy += ((dy / dist) * sp - this.vy) * 0.12;
@@ -776,14 +777,14 @@ export class Spider {
     const c = Math.cos(this.heading);
     const s = Math.sin(this.heading);
     const toW = (lx: number, ly: number): Vec => ({ x: this.x + lx * c - ly * s, y: this.y + lx * s + ly * c });
+    const spinnerets = toW(-2.85 * u, 0);
 
     // dragline from above while abseiling in
     if (this.mode === "drop") {
-      const tail = toW(-2.2 * u, 0);
       ctx.beginPath();
-      ctx.moveTo(tail.x, -4);
-      ctx.lineTo(tail.x, tail.y);
-      ctx.strokeStyle = "rgba(235,226,210,0.55)";
+      ctx.moveTo(spinnerets.x, -4);
+      ctx.lineTo(spinnerets.x, spinnerets.y);
+      ctx.strokeStyle = "rgba(235,226,210,0.6)";
       ctx.lineWidth = 0.6;
       ctx.stroke();
     }
@@ -791,101 +792,271 @@ export class Spider {
     // dragline back to the hub while away
     if (this.drag > 0.02 && this.mode !== "drop") {
       const hub = m.points[m.hub];
-      const tail = toW(-2.2 * u, 0);
       ctx.beginPath();
       ctx.moveTo(hub.x, hub.y);
-      ctx.lineTo(tail.x, tail.y);
+      ctx.lineTo(spinnerets.x, spinnerets.y);
       ctx.strokeStyle = `rgba(235,226,210,${(0.35 * this.drag).toFixed(3)})`;
       ctx.lineWidth = 0.6;
       ctx.stroke();
     }
 
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    for (const leg of this.legs) {
-      const ra = leg.side * (0.55 + leg.i * 0.42);
-      const root = toW(0.15 * u + Math.cos(ra) * 0.5 * u, Math.sin(ra) * 0.42 * u);
-      const reach = LEG_REACH[leg.i] * u;
-      const femur = reach * 0.62;
-      const tibia = reach * 0.66;
-      // never draw a leg longer than it really is
-      let tipX = leg.tx;
-      let tipY = leg.ty;
-      const span = Math.hypot(tipX - root.x, tipY - root.y);
-      const maxSpan = (femur + tibia) * 0.98;
-      if (span > maxSpan) {
-        tipX = root.x + ((tipX - root.x) / span) * maxSpan;
-        tipY = root.y + ((tipY - root.y) / span) * maxSpan;
+    // ── Legs: femur → (knee/patella) → tibia → (ankle) → metatarsus + tarsus.
+    // Drawn rear pair first so the front legs overlap naturally.
+    const order = [3, 2, 1, 0];
+    for (const i of order) {
+      for (const leg of this.legs) {
+        if (leg.i !== i) continue;
+        const ra = leg.side * (0.42 + leg.i * 0.48);
+        const root = toW(0.2 * u + Math.cos(ra) * 0.5 * u, Math.sin(ra) * 0.44 * u);
+        const L = LEG_REACH[leg.i] * u;
+        const fem = 0.42 * L;
+        const tib = 0.36 * L;
+        const meta = 0.32 * L;
+
+        let tipX = leg.tx;
+        let tipY = leg.ty;
+        const span = Math.hypot(tipX - root.x, tipY - root.y) || 1;
+        const maxSpan = (fem + tib + meta) * 0.96;
+        if (span > maxSpan) {
+          tipX = root.x + ((tipX - root.x) / span) * maxSpan;
+          tipY = root.y + ((tipY - root.y) / span) * maxSpan;
+        }
+
+        // knee from 2-bone IK (femur vs. the rest), bending away from the body
+        const knee = solveKnee(root.x, root.y, tipX, tipY, fem, tib + meta, this.x, this.y);
+        // ankle: along knee→tip, nudged outward so the lower leg arcs down to the silk
+        const kx = tipX - knee.x;
+        const ky = tipY - knee.y;
+        const kl = Math.hypot(kx, ky) || 1;
+        const f = tib / (tib + meta);
+        let ax = knee.x + kx * f;
+        let ay = knee.y + ky * f;
+        let nx = -ky / kl;
+        let ny = kx / kl;
+        if ((ax + nx - this.x) ** 2 + (ay + ny - this.y) ** 2 < (ax - this.x) ** 2 + (ay - this.y) ** 2) {
+          nx = -nx;
+          ny = -ny;
+        }
+        ax += nx * 0.07 * L;
+        ay += ny * 0.07 * L;
+
+        const lift = leg.p >= 0 ? Math.sin(Math.min(1, leg.p) * Math.PI) : 0;
+        const w = 1 + lift * 0.12;
+        limb(ctx, root.x, root.y, knee.x, knee.y, 0.3 * u * w, 0.22 * u * w);
+        limb(ctx, knee.x, knee.y, ax, ay, 0.2 * u * w, 0.14 * u * w);
+        limb(ctx, ax, ay, tipX, tipY, 0.13 * u * w, 0.06 * u * w);
+
+        // joints
+        joint(ctx, knee.x, knee.y, 0.13 * u);
+        joint(ctx, ax, ay, 0.09 * u);
+
+        // fine bristles (setae) on tibia and metatarsus
+        setae(ctx, knee.x, knee.y, ax, ay, 0.18 * u, 3);
+        setae(ctx, ax, ay, tipX, tipY, 0.14 * u, 3);
       }
-      const knee = solveKnee(root.x, root.y, tipX, tipY, femur, tibia, this.x, this.y);
-      const lift = leg.p >= 0 ? Math.sin(Math.min(1, leg.p) * Math.PI) : 0;
-
-      ctx.beginPath();
-      ctx.moveTo(root.x, root.y);
-      ctx.lineTo(knee.x, knee.y);
-      ctx.strokeStyle = "#050505";
-      ctx.lineWidth = 0.34 * u;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(knee.x, knee.y);
-      ctx.lineTo(tipX, tipY);
-      ctx.lineWidth = 0.22 * u * (1 + lift * 0.3);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(root.x, root.y);
-      ctx.lineTo(knee.x, knee.y);
-      ctx.lineTo(tipX, tipY);
-      ctx.strokeStyle = `rgba(150,155,165,${(0.14 + lift * 0.08).toFixed(3)})`;
-      ctx.lineWidth = 0.09 * u;
-      ctx.stroke();
     }
 
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.heading);
 
-    // abdomen
-    const ag = ctx.createRadialGradient(-1.45 * u, -0.35 * u, 0.1 * u, -1.25 * u, 0, 1.15 * u);
-    ag.addColorStop(0, "#3a3b40");
-    ag.addColorStop(0.4, "#0c0c0e");
-    ag.addColorStop(1, "#000000");
+    // pedicel
+    ctx.fillStyle = "#1a0f07";
+    ctx.beginPath();
+    ctx.ellipse(-0.55 * u, 0, 0.22 * u, 0.16 * u, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ── Abdomen: bulbous, mottled brown with a dark folium and a pale cross.
+    const ab = { x: -1.6 * u, rx: 1.3 * u, ry: 1.02 * u };
+    const ag = ctx.createRadialGradient(ab.x + 0.35 * u, -0.4 * u, 0.1 * u, ab.x, 0, ab.rx * 1.05);
+    ag.addColorStop(0, "#7d5631");
+    ag.addColorStop(0.45, "#3d2613");
+    ag.addColorStop(1, "#120a04");
     ctx.fillStyle = ag;
     ctx.beginPath();
-    ctx.ellipse(-1.3 * u, 0, 1.1 * u, 0.82 * u, 0, 0, Math.PI * 2);
+    ctx.ellipse(ab.x, 0, ab.rx, ab.ry, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "rgba(140,145,155,0.18)";
-    ctx.lineWidth = 0.7;
+
+    // folium — the scalloped, leaf-shaped band down the back
+    ctx.beginPath();
+    const fx0 = ab.x + ab.rx * 0.82;
+    const fx1 = ab.x - ab.rx * 0.95;
+    const steps = 14;
+    for (let k = 0; k <= steps; k++) {
+      const tt = k / steps;
+      const x = fx0 + (fx1 - fx0) * tt;
+      const width = Math.sin(Math.PI * Math.min(1, tt * 1.1)) * 0.62 * u * (1 + 0.12 * Math.sin(tt * Math.PI * 8));
+      if (k === 0) ctx.moveTo(x, -width);
+      else ctx.lineTo(x, -width);
+    }
+    for (let k = steps; k >= 0; k--) {
+      const tt = k / steps;
+      const x = fx0 + (fx1 - fx0) * tt;
+      const width = Math.sin(Math.PI * Math.min(1, tt * 1.1)) * 0.62 * u * (1 + 0.12 * Math.sin(tt * Math.PI * 8));
+      ctx.lineTo(x, width);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "rgba(18,10,4,0.6)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(226,196,150,0.35)";
+    ctx.lineWidth = 0.6;
     ctx.stroke();
 
-    // cephalothorax
-    const cg = ctx.createRadialGradient(0.05 * u, -0.2 * u, 0.05 * u, 0.15 * u, 0, 0.7 * u);
-    cg.addColorStop(0, "#2c2d31");
-    cg.addColorStop(1, "#000000");
-    ctx.fillStyle = cg;
-    ctx.beginPath();
-    ctx.ellipse(0.15 * u, 0, 0.66 * u, 0.52 * u, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // pedipalps
-    ctx.strokeStyle = "#050505";
-    ctx.lineWidth = 0.18 * u;
-    for (const side of [-1, 1]) {
+    // pale cross marking (the "garden spider" cross)
+    ctx.fillStyle = "rgba(236,218,184,0.9)";
+    const dots: [number, number, number][] = [
+      [-0.95, 0, 0.09],
+      [-1.25, 0, 0.1],
+      [-1.55, 0, 0.1],
+      [-1.85, 0, 0.08],
+      [-2.12, 0, 0.06],
+      [-1.25, -0.3, 0.08],
+      [-1.25, 0.3, 0.08],
+      [-1.25, -0.56, 0.06],
+      [-1.25, 0.56, 0.06],
+    ];
+    for (const [dx, dy, r] of dots) {
       ctx.beginPath();
-      ctx.moveTo(0.7 * u, side * 0.18 * u);
-      ctx.lineTo(1.05 * u, side * 0.34 * u);
-      ctx.stroke();
+      ctx.arc(dx * u, dy * u, r * u, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // eyes
-    ctx.fillStyle = "rgba(220,225,235,0.5)";
+    // gloss + warm rim so it never disappears against the night
+    const gloss = ctx.createRadialGradient(ab.x + 0.4 * u, -0.5 * u, 0, ab.x + 0.4 * u, -0.5 * u, 0.7 * u);
+    gloss.addColorStop(0, "rgba(255,240,220,0.22)");
+    gloss.addColorStop(1, "rgba(255,240,220,0)");
+    ctx.fillStyle = gloss;
+    ctx.beginPath();
+    ctx.ellipse(ab.x, 0, ab.rx, ab.ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(240,200,140,0.32)";
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // ── Cephalothorax with median groove and radial striae
+    const cg = ctx.createRadialGradient(0.1 * u, -0.25 * u, 0.05 * u, 0.2 * u, 0, 0.75 * u);
+    cg.addColorStop(0, "#6e4c2c");
+    cg.addColorStop(1, "#1d1209");
+    ctx.fillStyle = cg;
+    ctx.beginPath();
+    ctx.ellipse(0.2 * u, 0, 0.74 * u, 0.6 * u, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(240,200,140,0.28)";
+    ctx.lineWidth = 0.7;
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(12,7,3,0.65)";
+    ctx.lineWidth = Math.max(0.8, 0.1 * u);
+    ctx.beginPath();
+    ctx.moveTo(-0.35 * u, 0);
+    ctx.lineTo(0.55 * u, 0);
+    ctx.stroke();
+    ctx.lineWidth = 0.6;
     for (const side of [-1, 1]) {
+      for (let k = 0; k < 3; k++) {
+        const a = side * (0.9 + k * 0.55);
+        ctx.beginPath();
+        ctx.moveTo(0.1 * u + Math.cos(a) * 0.15 * u, Math.sin(a) * 0.15 * u);
+        ctx.lineTo(0.1 * u + Math.cos(a) * 0.5 * u, Math.sin(a) * 0.42 * u);
+        ctx.stroke();
+      }
+    }
+
+    // chelicerae + pedipalps
+    for (const side of [-1, 1]) {
+      ctx.fillStyle = "#2a1a0d";
       ctx.beginPath();
-      ctx.arc(0.66 * u, side * 0.12 * u, Math.max(0.5, 0.075 * u), 0, Math.PI * 2);
+      ctx.ellipse(0.98 * u, side * 0.13 * u, 0.2 * u, 0.12 * u, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const p0 = { x: 0.85 * u, y: side * 0.3 * u };
+      const p1 = { x: 1.2 * u, y: side * 0.48 * u };
+      const p2 = { x: 1.48 * u, y: side * 0.4 * u };
+      limb(ctx, p0.x, p0.y, p1.x, p1.y, 0.14 * u, 0.1 * u);
+      limb(ctx, p1.x, p1.y, p2.x, p2.y, 0.1 * u, 0.12 * u);
+    }
+
+    // eyes: two rows of glossy beads
+    for (const [ex, ey, r] of [
+      [0.8, 0.08, 0.07],
+      [0.8, -0.08, 0.07],
+      [0.72, 0.22, 0.055],
+      [0.72, -0.22, 0.055],
+    ] as [number, number, number][]) {
+      ctx.fillStyle = "#050302";
+      ctx.beginPath();
+      ctx.arc(ex * u, ey * u, Math.max(0.6, r * u), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.75)";
+      ctx.beginPath();
+      ctx.arc(ex * u + 0.02 * u, ey * u - 0.02 * u, Math.max(0.3, r * 0.35 * u), 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
   }
+}
+
+/** One tapered leg segment, banded dark at the joints like a real orb weaver. */
+function limb(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, w1: number, w2: number) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len;
+  const ny = dx / len;
+  const g = ctx.createLinearGradient(x1, y1, x2, y2);
+  g.addColorStop(0, "#22140a");
+  g.addColorStop(0.16, "#94683b");
+  g.addColorStop(0.62, "#6e4a26");
+  g.addColorStop(0.86, "#2a180b");
+  g.addColorStop(1, "#140b05");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(x1 + (nx * w1) / 2, y1 + (ny * w1) / 2);
+  ctx.lineTo(x2 + (nx * w2) / 2, y2 + (ny * w2) / 2);
+  ctx.arc(x2, y2, w2 / 2, Math.atan2(ny, nx), Math.atan2(-ny, -nx));
+  ctx.lineTo(x1 - (nx * w1) / 2, y1 - (ny * w1) / 2);
+  ctx.arc(x1, y1, w1 / 2, Math.atan2(-ny, -nx), Math.atan2(ny, nx));
+  ctx.closePath();
+  ctx.fill();
+  // thin highlight along one edge
+  ctx.beginPath();
+  ctx.moveTo(x1 + nx * w1 * 0.3, y1 + ny * w1 * 0.3);
+  ctx.lineTo(x2 + nx * w2 * 0.3, y2 + ny * w2 * 0.3);
+  ctx.strokeStyle = "rgba(255,226,180,0.22)";
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+}
+
+function joint(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = "#1a0f07";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.35, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,230,190,0.25)";
+  ctx.fill();
+}
+
+function setae(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, len: number, n: number) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const l = Math.hypot(dx, dy) || 1;
+  const ux = dx / l;
+  const uy = dy / l;
+  ctx.strokeStyle = "rgba(20,12,6,0.85)";
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  for (let k = 1; k <= n; k++) {
+    const t = k / (n + 1);
+    const px = x1 + dx * t;
+    const py = y1 + dy * t;
+    for (const side of [-1, 1]) {
+      const bx = px - uy * side * len * 0.35;
+      const by = py + ux * side * len * 0.35;
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + (ux * 0.8 - uy * side * 0.6) * len, by + (uy * 0.8 + ux * side * 0.6) * len);
+    }
+  }
+  ctx.stroke();
 }
 
 function solveKnee(rx: number, ry: number, tx: number, ty: number, a: number, b: number, bx: number, by: number): Vec {

@@ -207,6 +207,132 @@
   display: block;
 }
 
+/* Intro caption — tells the story while the web is being spun */
+.sw-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 6;
+  margin: 0;
+  max-width: calc(100% - 2rem);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 241, 234, 0.14);
+  background: rgba(12, 9, 7, 0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--sw-muted);
+  font-size: 0.8rem;
+  text-align: center;
+  pointer-events: none;
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: sw-caption 4.25s ease forwards;
+}
+
+.sw-caption-sfx {
+  margin-right: 0.35rem;
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--sw-text);
+}
+
+@keyframes sw-caption {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  28%,
+  90% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Hairline (engraved strand, aim guide, callouts) + thinking-orbs layers */
+.sw-hairline {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: transparent !important;
+}
+
+.sw-hairline svg {
+  display: block;
+  overflow: visible;
+}
+
+.sw-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.sw-orb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.sw-orb canvas {
+  display: block;
+}
+
+/* spider + intro layer sits above the skill labels */
+.sw-canvas-top {
+  z-index: 5;
+  pointer-events: none;
+}
+
+.sw-replay {
+  position: absolute;
+  top: 0.9rem;
+  right: 1rem;
+  z-index: 7;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--sw-line);
+  background: rgba(12, 9, 7, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--sw-faint);
+  font: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.sw-replay.is-ready {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sw-replay:hover {
+  color: var(--sw-text);
+  border-color: rgba(246, 241, 234, 0.2);
+}
+
+.sw-replay:focus-visible {
+  outline: 2px solid var(--sw-amber);
+  outline-offset: 2px;
+}
+
 .sw-hub {
   position: absolute;
   top: 0;
@@ -406,10 +532,12 @@
   position: absolute;
   left: 50%;
   bottom: 1.5rem;
-  z-index: 5;
+  z-index: 6;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
+  opacity: 0;
+  transition: opacity 0.5s ease 0.1s;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   border: 1px solid var(--sw-line);
@@ -421,6 +549,10 @@
   white-space: nowrap;
   pointer-events: none;
   transform: translateX(-50%);
+}
+
+.sw-hint.is-ready {
+  opacity: 1;
 }
 
 .sw-hint-dot {

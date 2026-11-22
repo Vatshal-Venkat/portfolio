@@ -1,46 +1,52 @@
 /* ==========================================================================
-   Intro: Spider-Man's web-shooter fires a single hairline strand to the hub,
-   it bursts into spokes, the spiral winds itself outward, and the spider
-   abseils in. The animation only *reveals* the live physics web thread by
-   thread, so its last frame is exactly the resting web — no swap, no jump.
+   Intro: Spider-Man reaches in from above, squeezes the trigger, and his
+   web-shooter fires a single hairline strand to the hub — THWIP. The strand
+   bursts into spokes, the spiral winds itself outward, the hand pulls away
+   and the spider abseils in. The animation only *reveals* the live physics
+   web thread by thread, so its last frame is exactly the resting web.
    ========================================================================== */
 
 import { K_ANCHOR, K_FRAME, K_HUB, K_SPIRAL, K_SPOKE, pluck, type Vec, type WebModel } from "./engine";
+import { easeTravel } from "@howells/hairline/kit";
+import type { OverlayFrame, Seg } from "./HairlineOverlay";
+import { drawHand, NOZZLE, type HandPose } from "./hand";
 
-/** Timeline in ms. Short, but each beat is readable. */
+export interface OrbPos {
+  x: number;
+  y: number;
+  a: number;
+}
+
+/** Timeline in ms — unhurried enough that every beat reads. */
 export const T = {
-  THWIP: 220, // hand settles, strand fires
-  IMPACT: 500, // thinking orb hits the hub
-  SPOKE_DUR: 300,
-  FRAME: 690,
-  ANCHOR: 770,
-  SPIRAL: 700,
-  SPIRAL_DUR: 620,
-  BEADS: 760,
-  BEADS_SPREAD: 540,
-  RELEASE: 1150, // shooter line detaches
-  HAND_OUT: 1180,
-  DROP: 1250, // spider abseils in
-  DROP_END: 1700,
-  TOTAL: 1760,
+  HAND_IN: 750, // hand descends from above
+  CURL: 800, // middle + ring fingers start pressing the palm trigger
+  THWIP: 1000, // strand fires
+  IMPACT: 1600, // thinking orb hits the hub
+  SPOKE_DUR: 650,
+  FRAME: 2100,
+  ANCHOR: 2250,
+  SPIRAL: 2150,
+  SPIRAL_DUR: 1250,
+  BEADS: 2300,
+  BEADS_SPREAD: 1100,
+  RELEASE: 3250, // shooter line detaches
+  HAND_OUT: 3300,
+  HAND_OUT_DUR: 480,
+  DROP: 3450, // spider abseils in
+  DROP_END: 4150,
+  TOTAL: 4250,
 };
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInCubic = (t: number) => t * t * t;
-const easeOutQuad = (t: number) => 1 - (1 - t) * (1 - t);
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 export const easeOutBack = (t: number) => {
-  const c1 = 1.70158;
+  const c1 = 1.4;
   const c3 = c1 + 1;
   return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
 };
-
-interface HandPose {
-  x: number;
-  y: number;
-  ang: number;
-  h: number;
-}
 
 export class WebIntro {
   private dist: Float32Array;
@@ -51,8 +57,9 @@ export class WebIntro {
   private spokeEnds: number[];
   private impacted = false;
   private lastNozzle: Vec | null = null;
+  private font: string;
 
-  constructor(private m: WebModel, private bottomReserve: number) {
+  constructor(private m: WebModel) {
     const hub = m.points[m.hub];
     this.dist = new Float32Array(m.points.length);
     m.points.forEach((p, i) => {
@@ -68,6 +75,7 @@ export class WebIntro {
       this.counts[th.kind] = n + 1;
       if (th.kind === K_SPIRAL) this.spiral.push(i);
     });
+    this.font = typeof document !== "undefined" ? getComputedStyle(document.body).fontFamily : "sans-serif";
   }
 
   /** Radius of the spoke burst front. */
@@ -103,13 +111,13 @@ export class WebIntro {
           r = (front - Math.max(dA, dB)) / hubBand;
           break;
         case K_FRAME: {
-          const start = T.FRAME + (this.rank[i] / this.counts[K_FRAME]) * 90;
-          r = (it - start) / 120;
+          const start = T.FRAME + (this.rank[i] / this.counts[K_FRAME]) * 160;
+          r = (it - start) / 220;
           break;
         }
         case K_ANCHOR: {
-          const start = T.ANCHOR + (this.rank[i] / this.counts[K_ANCHOR]) * 90;
-          r = easeOutCubic(clamp01((it - start) / 150));
+          const start = T.ANCHOR + (this.rank[i] / this.counts[K_ANCHOR]) * 160;
+          r = easeOutCubic(clamp01((it - start) / 280));
           break;
         }
         case K_SPIRAL:
@@ -123,101 +131,212 @@ export class WebIntro {
   /** 0 → hidden, overshoots slightly past 1 as each skill knot pops in. */
   beadPop(pointIdx: number, it: number) {
     const start = T.BEADS + (this.dist[pointIdx] / this.maxD) * T.BEADS_SPREAD;
-    const f = clamp01((it - start) / 220);
+    const f = clamp01((it - start) / 280);
     return f <= 0 ? 0 : easeOutBack(f);
   }
 
-  /** Where the abseiling spider hangs at time `it`, or null once landed. */
+  /** Where the abseiling spider hangs at time `it`. */
   dropY(it: number) {
     const hub = this.m.points[this.m.hub];
     const f = clamp01((it - T.DROP) / (T.DROP_END - T.DROP));
-    return -40 + (hub.y + 40) * easeOutBack(f);
+    return -60 + (hub.y + 60) * easeOutBack(f);
   }
 
+  /** The hand reaches in from above-left, aimed down at the hub. */
   private hand(it: number): HandPose | null {
     const m = this.m;
     const hub = m.points[m.hub];
-    const h = 40 * Math.max(0.6, m.scale);
-    const bx = Math.max(h * 1.2, m.W * 0.08);
-    const by = m.H - Math.max(56, this.bottomReserve * 0.5);
+    const h = 76 * Math.max(0.6, m.scale);
+    const bx = hub.x - Math.min(m.W * 0.25, 300 * Math.max(0.62, m.scale));
+    const by = Math.max(h * 1.5, (hub.y - 0) * 0.3);
     const baseAng = Math.atan2(hub.y - by, hub.x - bx);
     const dx = Math.cos(baseAng);
     const dy = Math.sin(baseAng);
 
-    const inOff = (1 - easeOutCubic(clamp01(it / T.THWIP))) * 6 * h;
-    const k = it >= T.THWIP ? clamp01(1 - (it - T.THWIP) / 170) : 0;
-    const recoil = 0.45 * h * k * k;
-    const outF = clamp01((it - T.HAND_OUT) / 280);
+    const inOff = (1 - easeOutCubic(clamp01(it / T.HAND_IN))) * 7.5 * h;
+    const k = it >= T.THWIP ? clamp01(1 - (it - T.THWIP) / 240) : 0;
+    const recoil = 0.5 * h * k * k;
+    const outF = clamp01((it - T.HAND_OUT) / T.HAND_OUT_DUR);
     if (outF >= 1) return null;
-    const outOff = easeInCubic(outF) * 7 * h;
+    const outOff = easeInCubic(outF) * 8 * h;
     const back = inOff + recoil + outOff;
-    return { x: bx - dx * back, y: by - dy * back, ang: baseAng - 0.1 * k * k, h };
+    const sway = it < T.THWIP ? Math.sin(it * 0.006) * 0.02 : 0;
+    // The hand points straight at the hub: the strand flies out through the gap
+    // the folded middle + ring fingers leave.
+    const ang = baseAng - 0.02 - 0.12 * k * k + sway;
+    const curlIn = easeInOut(clamp01((it - T.CURL) / (T.THWIP - T.CURL)));
+    const curlOut = clamp01((it - T.RELEASE) / 300);
+    return { x: bx - dx * back, y: by - dy * back, ang, h, curl: curlIn * (1 - curlOut) };
   }
 
   private nozzle(p: HandPose): Vec {
-    const lx = 0.3 * p.h;
-    const ly = 0.58 * p.h;
+    const lx = NOZZLE.x * p.h;
+    const ly = NOZZLE.y * p.h;
     const c = Math.cos(p.ang);
     const s = Math.sin(p.ang);
     return { x: p.x + lx * c - ly * s, y: p.y + lx * s + ly * c };
   }
 
-  /** Hand, shot strand and thinking orbs — drawn on the top layer. */
+  /** Where the fired strand runs at time `it` (null when there is none). */
+  private strandAt(it: number, noz: Vec | null): Seg | null {
+    const hub = this.m.points[this.m.hub];
+    if (!noz || it < T.THWIP || it >= T.RELEASE + 260) return null;
+    if (it < T.IMPACT) {
+      // Hairline's travel easing (ease-in-out-quart) for the shot
+      const f = easeTravel(clamp01((it - T.THWIP) / (T.IMPACT - T.THWIP)));
+      return { x0: noz.x, y0: noz.y, x1: noz.x + (hub.x - noz.x) * f, y1: noz.y + (hub.y - noz.y) * f, alpha: 1 };
+    }
+    if (it >= T.RELEASE && this.lastNozzle) {
+      // released: the loose end whips back into the hub
+      const f = easeOutCubic((it - T.RELEASE) / 260);
+      return {
+        x0: this.lastNozzle.x + (hub.x - this.lastNozzle.x) * f,
+        y0: this.lastNozzle.y + (hub.y - this.lastNozzle.y) * f,
+        x1: hub.x,
+        y1: hub.y,
+        alpha: 1 - f,
+      };
+    }
+    return { x0: noz.x, y0: noz.y, x1: hub.x, y1: hub.y, alpha: 1 };
+  }
+
+  private currentNozzle(it: number) {
+    const pose = this.hand(it);
+    const noz = pose ? this.nozzle(pose) : this.lastNozzle;
+    if (pose && it <= T.RELEASE) this.lastNozzle = noz;
+    return { pose, noz };
+  }
+
+  /** Engraved hairline layer: aim guide, fired strand, impact ring, callouts. */
+  overlay(it: number, skillCount: number): OverlayFrame {
+    const m = this.m;
+    const hub = m.points[m.hub];
+    const sc = Math.max(0.7, m.scale);
+    const { pose, noz } = this.currentNozzle(it);
+    const frame: OverlayFrame = { plates: [] };
+
+    if (pose && noz && it >= T.HAND_IN - 200 && it < T.THWIP + 160) {
+      const a = Math.min(clamp01((it - (T.HAND_IN - 200)) / 220), 1 - clamp01((it - T.THWIP) / 160));
+      frame.aim = { x0: noz.x, y0: noz.y, x1: hub.x, y1: hub.y, alpha: a * 0.9 };
+    }
+
+    const strand = this.strandAt(it, noz);
+    if (strand) frame.strand = strand;
+
+    if (it >= T.IMPACT && it < T.IMPACT + 700) {
+      const f = (it - T.IMPACT) / 700;
+      frame.ring = { cx: hub.x, cy: hub.y, r: (8 + easeOutCubic(f) * 120) * sc, alpha: 1 - f };
+    }
+
+    // callout on the web-shooter while it is being aimed
+    if (pose && noz && it >= T.HAND_IN - 100 && it < T.THWIP + 500) {
+      const a = Math.min(clamp01((it - (T.HAND_IN - 100)) / 250), 1 - clamp01((it - (T.THWIP + 200)) / 300));
+      const dir = Math.atan2(hub.y - noz.y, hub.x - noz.x);
+      frame.plates!.push({
+        // tucked under the shooter housing, clear of the fingers
+        x: noz.x + Math.cos(dir + Math.PI / 2) * 34 * sc - Math.cos(dir) * 70 * sc,
+        y: noz.y + Math.sin(dir + Math.PI / 2) * 34 * sc - Math.sin(dir) * 70 * sc,
+        anchor: "end",
+        lead: "Web-shooter",
+        text: it < T.THWIP ? "armed" : "fired",
+        alpha: a,
+      });
+    }
+
+    // and on the hub once the strand lands
+    const hubEnd = T.SPIRAL + T.SPIRAL_DUR;
+    if (it >= T.IMPACT + 150 && it < hubEnd + 300) {
+      const a = Math.min(clamp01((it - (T.IMPACT + 150)) / 300), 1 - clamp01((it - hubEnd) / 300));
+      frame.plates!.push({
+        x: hub.x + 48 * sc,
+        y: hub.y - 56 * sc,
+        lead: "One strand",
+        text: `${skillCount} skills`,
+        alpha: a,
+      });
+    }
+    return frame;
+  }
+
+  /** Positions for the three thinking-orbs (null = hidden). */
+  orbs(it: number): { shot: OrbPos | null; hub: OrbPos | null; spiral: OrbPos | null } {
+    const m = this.m;
+    const P = m.points;
+    const hub = P[m.hub];
+    const noz = this.lastNozzle;
+    const strand = it < T.IMPACT ? this.strandAt(it, noz) : null;
+    const shot = strand ? { x: strand.x1, y: strand.y1, a: 1 } : null;
+
+    const hubEnd = T.SPIRAL + T.SPIRAL_DUR;
+    let hubOrb: OrbPos | null = null;
+    if (it >= T.IMPACT - 40 && it < hubEnd + 260) {
+      const a = Math.min(clamp01((it - (T.IMPACT - 40)) / 140), 1 - clamp01((it - hubEnd) / 260));
+      hubOrb = { x: hub.x, y: hub.y, a };
+    }
+
+    let spiral: OrbPos | null = null;
+    const q = ((it - T.SPIRAL) / T.SPIRAL_DUR) * this.spiral.length;
+    if (q > 0 && q < this.spiral.length) {
+      const th = m.threads[this.spiral[Math.floor(q)]];
+      const f = q - Math.floor(q);
+      const a = P[th.a];
+      const b = P[th.b];
+      spiral = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, a: Math.min(1, (this.spiral.length - q) / 12) };
+    }
+    return { shot, hub: hubOrb, spiral };
+  }
+
+  /** Canvas part of the intro: the hand, muzzle flash, THWIP and spoke-tip glints. */
   draw(ctx: CanvasRenderingContext2D, it: number, t: number) {
     const m = this.m;
     const P = m.points;
     const hub = P[m.hub];
     const sc = Math.max(0.7, m.scale);
-    const pose = this.hand(it);
-    const noz = pose ? this.nozzle(pose) : this.lastNozzle;
-    if (pose && it <= T.RELEASE) this.lastNozzle = noz;
+    const { pose, noz } = this.currentNozzle(it);
 
-    // the strand from the web-shooter
-    if (noz && it >= T.THWIP && it < T.RELEASE + 200) {
-      let ex = hub.x;
-      let ey = hub.y;
-      let sx = noz.x;
-      let sy = noz.y;
-      let alpha = 0.9;
-      if (it < T.IMPACT) {
-        const f = easeOutQuad((it - T.THWIP) / (T.IMPACT - T.THWIP));
-        ex = noz.x + (hub.x - noz.x) * f;
-        ey = noz.y + (hub.y - noz.y) * f;
-      } else if (it >= T.RELEASE && this.lastNozzle) {
-        // released: the loose end recoils back into the hub
-        const f = easeOutCubic((it - T.RELEASE) / 200);
-        sx = this.lastNozzle.x + (hub.x - this.lastNozzle.x) * f;
-        sy = this.lastNozzle.y + (hub.y - this.lastNozzle.y) * f;
-        alpha = 0.9 * (1 - f);
+    // muzzle flash + speed lines
+    if (noz && pose && it >= T.THWIP && it < T.THWIP + 220) {
+      const f = (it - T.THWIP) / 220;
+      drawOrb(ctx, noz.x, noz.y, (3 + f * 6) * sc, 1 - f, t, 0);
+      const dir = Math.atan2(hub.y - noz.y, hub.x - noz.x);
+      ctx.strokeStyle = `rgba(255,255,255,${(0.7 * (1 - f)).toFixed(3)})`;
+      ctx.lineWidth = 0.7;
+      for (const off of [-0.32, 0, 0.32]) {
+        const a = dir + off;
+        const r0 = (10 + f * 18) * sc;
+        const r1 = r0 + 14 * sc;
+        ctx.beginPath();
+        ctx.moveTo(noz.x + Math.cos(a) * r0, noz.y + Math.sin(a) * r0);
+        ctx.lineTo(noz.x + Math.cos(a) * r1, noz.y + Math.sin(a) * r1);
+        ctx.stroke();
       }
-      ctx.beginPath();
-      ctx.moveTo(sx, sy);
-      ctx.lineTo(ex, ey);
-      ctx.strokeStyle = `rgba(240,234,224,${alpha.toFixed(3)})`;
-      ctx.lineWidth = 0.9;
-      ctx.stroke();
-
-      if (it < T.IMPACT) drawOrb(ctx, ex, ey, 4.4 * sc, 1, t, 3);
     }
 
-    // muzzle flash
-    if (noz && it >= T.THWIP && it < T.THWIP + 120) {
-      const f = (it - T.THWIP) / 120;
-      drawOrb(ctx, noz.x, noz.y, (3 + f * 5) * sc, 1 - f, t, 0);
+    // THWIP! — hairline comic lettering out along the strand
+    if (noz && it >= T.THWIP && it < T.THWIP + 1100) {
+      const e = it - T.THWIP;
+      const pop = e < 160 ? 0.6 + (e / 160) * 0.5 : e < 260 ? 1.1 - ((e - 160) / 100) * 0.1 : 1;
+      const a = e < 700 ? 1 : 1 - (e - 700) / 400;
+      const dir = Math.atan2(hub.y - noz.y, hub.x - noz.x);
+      const px = noz.x + Math.cos(dir + Math.PI / 2) * 38 * sc + Math.cos(dir) * 120 * sc;
+      const py = noz.y + Math.sin(dir + Math.PI / 2) * 38 * sc + Math.sin(dir) * 120 * sc;
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(-0.14);
+      ctx.scale(pop, pop);
+      ctx.font = `italic 800 ${Math.round(26 * sc)}px ${this.font}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineJoin = "round";
+      ctx.fillStyle = `rgba(255,255,255,${(0.08 * a).toFixed(3)})`;
+      ctx.fillText("THWIP!", 0, 0);
+      ctx.strokeStyle = `rgba(255,255,255,${(0.95 * a).toFixed(3)})`;
+      ctx.lineWidth = 1;
+      ctx.strokeText("THWIP!", 0, 0);
+      ctx.restore();
     }
 
-    // impact at the hub
-    if (it >= T.IMPACT && it < T.IMPACT + 340) {
-      const f = (it - T.IMPACT) / 340;
-      ctx.beginPath();
-      ctx.arc(hub.x, hub.y, (10 + easeOutCubic(f) * 95) * sc, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255,226,180,${(0.55 * (1 - f)).toFixed(3)})`;
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-      drawOrb(ctx, hub.x, hub.y, (6 - f * 3) * sc, 1 - f * f, t, 3);
-    }
-
-    // an orb rides the tip of every spoke as it shoots out
+    // a small glint rides the tip of every spoke as it shoots out
     if (it >= T.IMPACT) {
       const front = this.front(it);
       this.spokeEnds.forEach((end) => {
@@ -226,26 +345,15 @@ export class WebIntro {
         if (a <= 0) return;
         const e = P[end];
         const f = Math.min(1, front / L);
-        drawOrb(ctx, hub.x + (e.x - hub.x) * f, hub.y + (e.y - hub.y) * f, 2.2 * sc, a, t, 0);
+        drawOrb(ctx, hub.x + (e.x - hub.x) * f, hub.y + (e.y - hub.y) * f, 2 * sc, a, t, 0);
       });
-    }
-
-    // …and one winds the capture spiral
-    const q = ((it - T.SPIRAL) / T.SPIRAL_DUR) * this.spiral.length;
-    if (q > 0 && q < this.spiral.length) {
-      const th = m.threads[this.spiral[Math.floor(q)]];
-      const f = q - Math.floor(q);
-      const a = P[th.a];
-      const b = P[th.b];
-      const fade = Math.min(1, (this.spiral.length - q) / 12);
-      drawOrb(ctx, a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f, 3 * sc, fade, t, 2);
     }
 
     if (pose) drawHand(ctx, pose);
   }
 }
 
-/** A "thinking" orb: hot core, soft glow, hairline halo, orbiting motes. */
+/** A small glowing glint: hot core, soft glow, hairline halo. */
 export function drawOrb(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -282,168 +390,5 @@ export function drawOrb(
     ctx.fillStyle = `rgba(255,230,185,${(0.9 * a).toFixed(3)})`;
     ctx.fill();
   }
-  ctx.restore();
-}
-
-/** Stylised gloved hand in the "thwip" pose with a wrist web-shooter.
- *  Local space: +x points at the target, wrist at the origin. */
-function drawHand(ctx: CanvasRenderingContext2D, p: HandPose) {
-  const h = p.h;
-  ctx.save();
-  ctx.translate(p.x, p.y);
-  ctx.rotate(p.ang);
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
-  const red = (y0: number, y1: number) => {
-    const g = ctx.createLinearGradient(0, y0, 0, y1);
-    g.addColorStop(0, "#e2283b");
-    g.addColorStop(0.55, "#b0101f");
-    g.addColorStop(1, "#640510");
-    return g;
-  };
-  const metal = (y0: number, y1: number) => {
-    const g = ctx.createLinearGradient(0, y0, 0, y1);
-    g.addColorStop(0, "#f2f4f7");
-    g.addColorStop(0.45, "#9ba1ab");
-    g.addColorStop(0.62, "#5c626c");
-    g.addColorStop(1, "#d6dae0");
-    return g;
-  };
-  const webInk = "rgba(0,0,0,0.6)";
-
-  // forearm (sleeve) running off-canvas
-  const arm = new Path2D();
-  arm.moveTo(-6 * h, -0.52 * h);
-  arm.lineTo(0, -0.4 * h);
-  arm.quadraticCurveTo(0.14 * h, 0, 0, 0.42 * h);
-  arm.lineTo(-6 * h, 0.58 * h);
-  arm.closePath();
-  ctx.fillStyle = red(-0.52 * h, 0.58 * h);
-  ctx.fill(arm);
-  ctx.save();
-  ctx.clip(arm);
-  ctx.strokeStyle = webInk;
-  ctx.lineWidth = 0.7;
-  for (const yy of [-0.3, -0.06, 0.18, 0.42]) {
-    ctx.beginPath();
-    ctx.moveTo(-6 * h, yy * 1.1 * h);
-    ctx.lineTo(0.1 * h, yy * h);
-    ctx.stroke();
-  }
-  for (let xx = -0.7 * h; xx > -6 * h; xx -= 0.72 * h) {
-    ctx.beginPath();
-    ctx.moveTo(xx, -0.7 * h);
-    ctx.quadraticCurveTo(xx + 0.14 * h, 0, xx, 0.7 * h);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // fingers: [x0, y0, x1, y1, width] — index & pinky out, middle & ring curled
-  const fingers: [number, number, number, number, number][] = [
-    [0.5, -0.36, 1.0, -0.86, 0.27], // thumb
-    [1.1, -0.26, 2.05, -0.5, 0.23], // index
-    [1.08, 0.3, 1.74, 0.56, 0.2], // pinky
-    [1.12, -0.04, 1.36, 0.02, 0.24], // middle (curled)
-    [1.1, 0.14, 1.33, 0.21, 0.22], // ring (curled)
-  ];
-  const palm = new Path2D();
-  palm.ellipse(0.72 * h, 0, 0.6 * h, 0.5 * h, 0, 0, Math.PI * 2);
-
-  // dark silhouette pass for definition
-  ctx.strokeStyle = "rgba(12,0,2,0.8)";
-  for (const f of fingers) {
-    ctx.beginPath();
-    ctx.moveTo(f[0] * h, f[1] * h);
-    ctx.lineTo(f[2] * h, f[3] * h);
-    ctx.lineWidth = f[4] * h + 2;
-    ctx.stroke();
-  }
-  ctx.lineWidth = 2;
-  ctx.stroke(palm);
-
-  // glove fill
-  ctx.strokeStyle = red(-0.9 * h, 0.7 * h);
-  for (const f of fingers) {
-    ctx.beginPath();
-    ctx.moveTo(f[0] * h, f[1] * h);
-    ctx.lineTo(f[2] * h, f[3] * h);
-    ctx.lineWidth = f[4] * h;
-    ctx.stroke();
-  }
-  ctx.fillStyle = red(-0.5 * h, 0.5 * h);
-  ctx.fill(palm);
-
-  // hairline web pattern on the glove
-  ctx.strokeStyle = webInk;
-  ctx.lineWidth = 0.7;
-  for (const f of fingers.slice(0, 3)) {
-    const x0 = f[0] * h;
-    const y0 = f[1] * h;
-    const x1 = f[2] * h;
-    const y1 = f[3] * h;
-    ctx.beginPath();
-    ctx.moveTo(x0, y0);
-    ctx.lineTo(x1, y1);
-    ctx.stroke();
-    const len = Math.hypot(x1 - x0, y1 - y0) || 1;
-    const nx = (-(y1 - y0) / len) * f[4] * h * 0.45;
-    const ny = ((x1 - x0) / len) * f[4] * h * 0.45;
-    for (const k of [0.45, 0.75]) {
-      const cx = x0 + (x1 - x0) * k;
-      const cy = y0 + (y1 - y0) * k;
-      ctx.beginPath();
-      ctx.moveTo(cx - nx, cy - ny);
-      ctx.lineTo(cx + nx, cy + ny);
-      ctx.stroke();
-    }
-  }
-  ctx.save();
-  ctx.clip(palm);
-  for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(0.72 * h, 0.04 * h);
-    ctx.lineTo(0.72 * h + Math.cos(a) * 0.8 * h, 0.04 * h + Math.sin(a) * 0.8 * h);
-    ctx.stroke();
-  }
-  for (const rr of [0.24, 0.44]) {
-    ctx.beginPath();
-    ctx.ellipse(0.72 * h, 0.04 * h, rr * h, rr * 0.84 * h, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  const sheen = ctx.createRadialGradient(0.55 * h, -0.22 * h, 0, 0.55 * h, -0.22 * h, 0.45 * h);
-  sheen.addColorStop(0, "rgba(255,255,255,0.18)");
-  sheen.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = sheen;
-  ctx.fill(palm);
-  ctx.restore();
-
-  // web-shooter: metal cuff + nozzle under the wrist
-  ctx.beginPath();
-  ctx.roundRect(-0.42 * h, -0.47 * h, 0.36 * h, 0.94 * h, 0.08 * h);
-  ctx.fillStyle = metal(-0.47 * h, 0.47 * h);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(0,0,0,0.5)";
-  ctx.lineWidth = 0.8;
-  ctx.stroke();
-  for (const xx of [-0.31, -0.17]) {
-    ctx.beginPath();
-    ctx.moveTo(xx * h, -0.45 * h);
-    ctx.lineTo(xx * h, 0.45 * h);
-    ctx.strokeStyle = "rgba(0,0,0,0.35)";
-    ctx.stroke();
-  }
-  ctx.beginPath();
-  ctx.roundRect(-0.14 * h, 0.5 * h, 0.42 * h, 0.16 * h, 0.05 * h);
-  ctx.fillStyle = metal(0.5 * h, 0.66 * h);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(0,0,0,0.5)";
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(0.28 * h, 0.58 * h, 0.05 * h, 0, Math.PI * 2);
-  ctx.fillStyle = "#1b1d21";
-  ctx.fill();
-
   ctx.restore();
 }
