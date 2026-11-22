@@ -12,10 +12,10 @@ export default function ExperienceList() {
           </p>
         </div>
         <div className="badge" style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
-          10/2025 - Present
+          10/2025 - 04/2026
         </div>
       </div>
-      
+
       <ul className="project-bullet-list">
         <li className="project-bullet-item">
           Built and deployed <strong>Altaric</strong>, a production-grade AI-focused corporate website, delivering a complete full-stack solution.

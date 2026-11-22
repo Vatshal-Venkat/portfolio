@@ -55,6 +55,8 @@ export interface WebModel {
   /** per-frame scratch: quadratic control points + glint for each thread */
   ctrl: Float32Array;
   spec: Float32Array;
+  /** 0..1 per thread — how much of it has been spun (intro animation) */
+  reveal: Float32Array;
 }
 
 export interface Brush {
@@ -247,6 +249,7 @@ export function buildWeb(W: number, H: number, bottomReserve: number): WebModel 
     adj,
     ctrl: new Float32Array(threads.length * 2),
     spec: new Float32Array(threads.length),
+    reveal: new Float32Array(threads.length).fill(1),
   };
 }
 
@@ -409,6 +412,8 @@ export function renderSilk(ctx: CanvasRenderingContext2D, m: WebModel, light: nu
     const c = (dx * lx + dy * ly) / len;
     const spec = Math.pow(1 - c * c, 14);
     m.spec[i] = spec;
+    const rv = m.reveal[i];
+    if (rv <= 0) continue;
 
     const style = KIND_STYLE[th.kind];
     const alpha = Math.min(1, (style.a + spec * 0.55) * alphaMul);
@@ -437,9 +442,18 @@ export function renderSilk(ctx: CanvasRenderingContext2D, m: WebModel, light: nu
       const qy = my + (hy / hl) * sag * 0.7 + sag * 0.45;
       m.ctrl[i * 2] = qx;
       m.ctrl[i * 2 + 1] = qy;
-      ctx.quadraticCurveTo(qx, qy, b.x, b.y);
+      if (rv >= 1) {
+        ctx.quadraticCurveTo(qx, qy, b.x, b.y);
+      } else {
+        // de Casteljau split: draw only the first `rv` of the curve
+        const ax = a.x + (qx - a.x) * rv;
+        const ay = a.y + (qy - a.y) * rv;
+        const bx2 = qx + (b.x - qx) * rv;
+        const by2 = qy + (b.y - qy) * rv;
+        ctx.quadraticCurveTo(ax, ay, ax + (bx2 - ax) * rv, ay + (by2 - ay) * rv);
+      }
     } else {
-      ctx.lineTo(b.x, b.y);
+      ctx.lineTo(a.x + dx * Math.min(1, rv), a.y + dy * Math.min(1, rv));
     }
     ctx.stroke();
   }
@@ -451,6 +465,9 @@ export function renderDew(ctx: CanvasRenderingContext2D, m: WebModel, light: num
   const ly = Math.sin(light + Math.PI);
 
   for (const d of m.dew) {
+    const vis = Math.min(1, Math.max(0, (m.reveal[d.thread] - d.t) * 8));
+    if (vis <= 0) continue;
+    const am = alphaMul * vis;
     const th = m.threads[d.thread];
     const a = P[th.a];
     const b = P[th.b];
@@ -465,18 +482,18 @@ export function renderDew(ctx: CanvasRenderingContext2D, m: WebModel, light: num
     // droplet body (refracts the dark background, so mostly a rim)
     ctx.beginPath();
     ctx.arc(x, y, d.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(232,222,206,${((0.08 + 0.2 * spec) * alphaMul).toFixed(3)})`;
+    ctx.fillStyle = `rgba(232,222,206,${((0.08 + 0.2 * spec) * am).toFixed(3)})`;
     ctx.fill();
 
     // specular highlight
     ctx.beginPath();
     ctx.arc(x + lx * d.r * 0.32, y + ly * d.r * 0.32, Math.max(0.42, d.r * 0.4), 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,251,242,${((0.22 + 0.78 * spec) * alphaMul).toFixed(3)})`;
+    ctx.fillStyle = `rgba(255,251,242,${((0.22 + 0.78 * spec) * am).toFixed(3)})`;
     ctx.fill();
 
     if (spec > 0.55 && d.r > 1.3) {
       const g = ctx.createRadialGradient(x, y, 0, x, y, d.r * 5);
-      g.addColorStop(0, `rgba(255,236,200,${(0.3 * spec * alphaMul).toFixed(3)})`);
+      g.addColorStop(0, `rgba(255,236,200,${(0.3 * spec * am).toFixed(3)})`);
       g.addColorStop(1, "rgba(255,236,200,0)");
       ctx.fillStyle = g;
       ctx.beginPath();
@@ -631,7 +648,7 @@ export class Spider {
   heading = Math.PI / 2;
   u: number;
   legs: Leg[] = [];
-  mode: "rest" | "hunt" | "inspect" | "return" = "rest";
+  mode: "rest" | "hunt" | "inspect" | "return" | "drop" = "rest";
   target = -1;
   until = 0;
   drag = 0;
@@ -658,12 +675,33 @@ export class Spider {
     return { x: this.x + Math.cos(a) * r + this.vx * 3, y: this.y + Math.sin(a) * r + this.vy * 3 };
   }
 
+  /** Hang from a dragline at (x, y) — used while abseiling in. */
+  setDrop(x: number, y: number) {
+    this.mode = "drop";
+    this.x = x;
+    this.y = y;
+    this.vx = 0;
+    this.vy = 0;
+    this.heading = Math.PI / 2;
+    for (const leg of this.legs) {
+      const d = this.desired(leg);
+      leg.tx = d.x;
+      leg.ty = d.y;
+      leg.p = -1;
+    }
+  }
+
+  land() {
+    if (this.mode === "drop") this.mode = "rest";
+  }
+
   hunt(idx: number) {
     this.mode = "hunt";
     this.target = idx;
   }
 
   update(m: WebModel, now: number, faceTo: Vec | null, calm: boolean) {
+    if (this.mode === "drop") return;
     const hub = m.points[m.hub];
     const tp = this.mode === "hunt" || this.mode === "inspect" ? m.points[this.target] ?? hub : hub;
     const dx = tp.x - this.x;
@@ -739,8 +777,19 @@ export class Spider {
     const s = Math.sin(this.heading);
     const toW = (lx: number, ly: number): Vec => ({ x: this.x + lx * c - ly * s, y: this.y + lx * s + ly * c });
 
+    // dragline from above while abseiling in
+    if (this.mode === "drop") {
+      const tail = toW(-2.2 * u, 0);
+      ctx.beginPath();
+      ctx.moveTo(tail.x, -4);
+      ctx.lineTo(tail.x, tail.y);
+      ctx.strokeStyle = "rgba(235,226,210,0.55)";
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    }
+
     // dragline back to the hub while away
-    if (this.drag > 0.02) {
+    if (this.drag > 0.02 && this.mode !== "drop") {
       const hub = m.points[m.hub];
       const tail = toW(-2.2 * u, 0);
       ctx.beginPath();
@@ -750,15 +799,6 @@ export class Spider {
       ctx.lineWidth = 0.6;
       ctx.stroke();
     }
-
-    // soft rim of lamplight so the dark body separates from the night
-    const halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 4 * u);
-    halo.addColorStop(0, "rgba(245,165,60,0.14)");
-    halo.addColorStop(1, "rgba(245,165,60,0)");
-    ctx.fillStyle = halo;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, 4 * u, 0, Math.PI * 2);
-    ctx.fill();
 
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -783,7 +823,7 @@ export class Spider {
       ctx.beginPath();
       ctx.moveTo(root.x, root.y);
       ctx.lineTo(knee.x, knee.y);
-      ctx.strokeStyle = "#3d2817";
+      ctx.strokeStyle = "#050505";
       ctx.lineWidth = 0.34 * u;
       ctx.stroke();
       ctx.beginPath();
@@ -796,7 +836,7 @@ export class Spider {
       ctx.moveTo(root.x, root.y);
       ctx.lineTo(knee.x, knee.y);
       ctx.lineTo(tipX, tipY);
-      ctx.strokeStyle = `rgba(250,190,115,${(0.5 + lift * 0.2).toFixed(3)})`;
+      ctx.strokeStyle = `rgba(150,155,165,${(0.14 + lift * 0.08).toFixed(3)})`;
       ctx.lineWidth = 0.09 * u;
       ctx.stroke();
     }
@@ -807,41 +847,28 @@ export class Spider {
 
     // abdomen
     const ag = ctx.createRadialGradient(-1.45 * u, -0.35 * u, 0.1 * u, -1.25 * u, 0, 1.15 * u);
-    ag.addColorStop(0, "#a8723f");
-    ag.addColorStop(0.45, "#4a2c17");
-    ag.addColorStop(1, "#140b06");
+    ag.addColorStop(0, "#3a3b40");
+    ag.addColorStop(0.4, "#0c0c0e");
+    ag.addColorStop(1, "#000000");
     ctx.fillStyle = ag;
     ctx.beginPath();
     ctx.ellipse(-1.3 * u, 0, 1.1 * u, 0.82 * u, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "rgba(250,195,120,0.45)";
+    ctx.strokeStyle = "rgba(140,145,155,0.18)";
     ctx.lineWidth = 0.7;
     ctx.stroke();
 
-    // folium pattern
-    ctx.strokeStyle = "rgba(245,200,140,0.55)";
-    ctx.lineWidth = Math.max(0.6, 0.1 * u);
-    for (let j = 0; j < 3; j++) {
-      const ox = -0.75 * u - j * 0.36 * u;
-      const w = (0.42 - j * 0.07) * u;
-      ctx.beginPath();
-      ctx.moveTo(ox, -w);
-      ctx.lineTo(ox - 0.2 * u, 0);
-      ctx.lineTo(ox, w);
-      ctx.stroke();
-    }
-
     // cephalothorax
     const cg = ctx.createRadialGradient(0.05 * u, -0.2 * u, 0.05 * u, 0.15 * u, 0, 0.7 * u);
-    cg.addColorStop(0, "#8a5a32");
-    cg.addColorStop(1, "#1a0f08");
+    cg.addColorStop(0, "#2c2d31");
+    cg.addColorStop(1, "#000000");
     ctx.fillStyle = cg;
     ctx.beginPath();
     ctx.ellipse(0.15 * u, 0, 0.66 * u, 0.52 * u, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // pedipalps
-    ctx.strokeStyle = "#3d2817";
+    ctx.strokeStyle = "#050505";
     ctx.lineWidth = 0.18 * u;
     for (const side of [-1, 1]) {
       ctx.beginPath();
@@ -851,7 +878,7 @@ export class Spider {
     }
 
     // eyes
-    ctx.fillStyle = "rgba(255,232,200,0.85)";
+    ctx.fillStyle = "rgba(220,225,235,0.5)";
     for (const side of [-1, 1]) {
       ctx.beginPath();
       ctx.arc(0.66 * u, side * 0.12 * u, Math.max(0.5, 0.075 * u), 0, Math.PI * 2);
