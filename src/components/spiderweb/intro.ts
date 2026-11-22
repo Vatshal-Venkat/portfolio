@@ -9,7 +9,7 @@
 import { K_ANCHOR, K_FRAME, K_HUB, K_SPIRAL, K_SPOKE, pluck, type Vec, type WebModel } from "./engine";
 import { easeTravel } from "@howells/hairline/kit";
 import type { OverlayFrame, Seg } from "./HairlineOverlay";
-import { drawHand, NOZZLE, type HandPose } from "./hand";
+import { drawHand, preloadGlove, NOZZLE, type HandPose } from "./hand";
 
 export interface OrbPos {
   x: number;
@@ -20,7 +20,6 @@ export interface OrbPos {
 /** Timeline in ms — unhurried enough that every beat reads. */
 export const T = {
   HAND_IN: 750, // hand descends from above
-  CURL: 800, // middle + ring fingers start pressing the palm trigger
   THWIP: 1000, // strand fires
   IMPACT: 1600, // thinking orb hits the hub
   SPOKE_DUR: 650,
@@ -41,7 +40,6 @@ export const T = {
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInCubic = (t: number) => t * t * t;
-const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 export const easeOutBack = (t: number) => {
   const c1 = 1.4;
   const c3 = c1 + 1;
@@ -76,6 +74,7 @@ export class WebIntro {
       if (th.kind === K_SPIRAL) this.spiral.push(i);
     });
     this.font = typeof document !== "undefined" ? getComputedStyle(document.body).fontFamily : "sans-serif";
+    preloadGlove();
   }
 
   /** Radius of the spoke burst front. */
@@ -146,9 +145,10 @@ export class WebIntro {
   private hand(it: number): HandPose | null {
     const m = this.m;
     const hub = m.points[m.hub];
-    const h = 76 * Math.max(0.6, m.scale);
+    const h = 92 * Math.max(0.6, m.scale);
     const bx = hub.x - Math.min(m.W * 0.25, 300 * Math.max(0.62, m.scale));
-    const by = Math.max(h * 1.5, (hub.y - 0) * 0.3);
+    // high enough that the faded sleeve runs off the top edge
+    const by = Math.max(h * 0.95, hub.y * 0.26);
     const baseAng = Math.atan2(hub.y - by, hub.x - bx);
     const dx = Math.cos(baseAng);
     const dy = Math.sin(baseAng);
@@ -163,10 +163,8 @@ export class WebIntro {
     const sway = it < T.THWIP ? Math.sin(it * 0.006) * 0.02 : 0;
     // The hand points straight at the hub: the strand flies out through the gap
     // the folded middle + ring fingers leave.
-    const ang = baseAng - 0.02 - 0.12 * k * k + sway;
-    const curlIn = easeInOut(clamp01((it - T.CURL) / (T.THWIP - T.CURL)));
-    const curlOut = clamp01((it - T.RELEASE) / 300);
-    return { x: bx - dx * back, y: by - dy * back, ang, h, curl: curlIn * (1 - curlOut) };
+    const ang = baseAng - 0.12 * k * k + sway;
+    return { x: bx - dx * back, y: by - dy * back, ang, h };
   }
 
   private nozzle(p: HandPose): Vec {
@@ -233,10 +231,10 @@ export class WebIntro {
       const a = Math.min(clamp01((it - (T.HAND_IN - 100)) / 250), 1 - clamp01((it - (T.THWIP + 200)) / 300));
       const dir = Math.atan2(hub.y - noz.y, hub.x - noz.x);
       frame.plates!.push({
-        // tucked under the shooter housing, clear of the fingers
-        x: noz.x + Math.cos(dir + Math.PI / 2) * 34 * sc - Math.cos(dir) * 70 * sc,
-        y: noz.y + Math.sin(dir + Math.PI / 2) * 34 * sc - Math.sin(dir) * 70 * sc,
-        anchor: "end",
+        // in the open space just above the shooter
+        x: noz.x + Math.cos(dir - Math.PI / 2) * 62 * sc + Math.cos(dir) * 6 * sc,
+        y: noz.y + Math.sin(dir - Math.PI / 2) * 62 * sc + Math.sin(dir) * 6 * sc,
+        anchor: "start",
         lead: "Web-shooter",
         text: it < T.THWIP ? "armed" : "fired",
         alpha: a,
@@ -318,8 +316,8 @@ export class WebIntro {
       const pop = e < 160 ? 0.6 + (e / 160) * 0.5 : e < 260 ? 1.1 - ((e - 160) / 100) * 0.1 : 1;
       const a = e < 700 ? 1 : 1 - (e - 700) / 400;
       const dir = Math.atan2(hub.y - noz.y, hub.x - noz.x);
-      const px = noz.x + Math.cos(dir + Math.PI / 2) * 38 * sc + Math.cos(dir) * 120 * sc;
-      const py = noz.y + Math.sin(dir + Math.PI / 2) * 38 * sc + Math.sin(dir) * 120 * sc;
+      const px = noz.x + Math.cos(dir - Math.PI / 2) * 52 * sc + Math.cos(dir) * 235 * sc;
+      const py = noz.y + Math.sin(dir - Math.PI / 2) * 52 * sc + Math.sin(dir) * 235 * sc;
       ctx.save();
       ctx.translate(px, py);
       ctx.rotate(-0.14);
