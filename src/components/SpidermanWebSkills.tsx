@@ -2,11 +2,57 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import "./SpidermanWebSkills.css";
+import {
+  SPOKES,
+  buildWeb,
+  stepWeb,
+  pluck,
+  nearestPoint,
+  shortestPaths,
+  tracePath,
+  renderSilk,
+  renderDew,
+  renderPath,
+  renderBead,
+  Spider,
+  type WebModel,
+  type Brush,
+} from "./spiderweb/engine";
 
-// Import icons
-import { FaSpider, FaBrain, FaDatabase, FaCloud, FaCode, FaTerminal, FaCubes, FaNetworkWired, FaServer, FaMicrochip, FaGlobe, FaWrench, FaRobot, FaLayerGroup, FaAws } from "react-icons/fa6";
-import { SiPython, SiJavascript, SiReact, SiNextdotjs, SiFastapi, SiDocker, SiVercel, SiMysql, SiFirebase, SiNeo4J, SiGit, SiGithub, SiFigma, SiHtml5, SiCss, SiPytorch, SiOpenai } from "react-icons/si";
-import { GiSpiderWeb, GiSparkles } from "react-icons/gi";
+import {
+  FaBrain,
+  FaDatabase,
+  FaCloud,
+  FaCode,
+  FaTerminal,
+  FaCubes,
+  FaNetworkWired,
+  FaServer,
+  FaMicrochip,
+  FaGlobe,
+  FaWrench,
+  FaRobot,
+  FaLayerGroup,
+  FaAws,
+} from "react-icons/fa6";
+import {
+  SiPython,
+  SiJavascript,
+  SiReact,
+  SiNextdotjs,
+  SiFastapi,
+  SiDocker,
+  SiVercel,
+  SiMysql,
+  SiFirebase,
+  SiNeo4J,
+  SiGit,
+  SiFigma,
+  SiHtml5,
+  SiPytorch,
+  SiOpenai,
+} from "react-icons/si";
+import { GiSpiderWeb } from "react-icons/gi";
 
 export interface SkillNode {
   id: string;
@@ -15,41 +61,8 @@ export interface SkillNode {
   icon: React.ReactNode;
   description: string;
   spoke: number; // 0 to 15
-  ring: number;  // 1 to 14
+  ring: number; // 3 to 14 (1–2 are the hub)
   relatedIds: string[];
-}
-
-const TOTAL_SPOKES = 16;
-const TOTAL_RINGS = 14;
-
-// 16 Fanned Organic Radial Spokes
-const SPOKE_ANGLES = Array.from({ length: TOTAL_SPOKES }, (_, i) => {
-  const base = (i * (2 * Math.PI / TOTAL_SPOKES)) - (Math.PI / 2);
-  const organicShift = Math.sin(i * 1.7) * 0.035;
-  return base + organicShift;
-});
-
-const SPOKE_STRETCH = Array.from({ length: TOTAL_SPOKES }, (_, i) => {
-  return 1.0 + Math.sin(i * 2.1) * 0.08;
-});
-
-// Non-equidistant exponential ring radius
-function getExponentialRingRadius(r: number, maxR: number, spokeIdx: number): number {
-  const minR = 30;
-  const t = (r - 1) / (TOTAL_RINGS - 1);
-  const expT = Math.pow(t, 1.75);
-  const sectorFactor = 1.0 + Math.sin(spokeIdx * 1.5 + r * 0.4) * 0.06;
-  return (minR + expT * (maxR - minR)) * sectorFactor;
-}
-
-// Background Silk Dust Particles
-interface SilkParticle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  alpha: number;
 }
 
 const ALL_SKILLS: SkillNode[] = [
@@ -428,511 +441,499 @@ const CATEGORIES = [
   "Database & Vector Search",
   "Cloud & Deployment",
   "Core CS",
-  "AI Frameworks & Automation"
+  "AI Frameworks & Automation",
+  "Web Platforms & Tools",
 ];
 
-function lerp(start: number, end: number, amt: number) {
-  return (1 - amt) * start + amt * end;
+const SKILL_BY_ID: Record<string, SkillNode> = Object.fromEntries(ALL_SKILLS.map((s) => [s.id, s]));
+
+const CATEGORY_COUNTS: Record<string, number> = ALL_SKILLS.reduce<Record<string, number>>((acc, s) => {
+  acc[s.category] = (acc[s.category] ?? 0) + 1;
+  return acc;
+}, {});
+
+interface LitPath {
+  path: number[];
+  born: number;
+  alpha: number;
+  dying: boolean;
+  phase: number;
 }
 
+interface Engine {
+  model: WebModel | null;
+  spider: Spider | null;
+  brush: Brush;
+  lightX: number;
+  W: number;
+  H: number;
+}
+
+const bottomReserveFor = (w: number) => (w < 640 ? 150 : 128);
+
 export default function SpidermanWebSkills() {
-  const [hoveredSkillId, setHoveredSkillId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const viewportRef = useRef<HTMLDivElement>(null);
-  const mousePosRef = useRef<{ x: number; y: number }>({ x: -9999, y: -9999 });
-
-  const [viewportSize, setViewportSize] = useState({ w: 980, h: 800 });
-
-  const animatedOpacitiesRef = useRef<Record<string, number>>({});
-  const animatedLineProgressRef = useRef<Record<string, number>>({});
-  const silkDustRef = useRef<SilkParticle[]>([]);
-
-  const updateDimensions = useCallback(() => {
-    if (viewportRef.current) {
-      const W = viewportRef.current.clientWidth;
-      const H = viewportRef.current.clientHeight || 800;
-      setViewportSize({ w: W, h: H });
-    }
-  }, []);
-
-  useEffect(() => {
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, [updateDimensions]);
-
-  // Initialize Background Silk Dust Particles
-  useEffect(() => {
-    const W = viewportSize.w;
-    const H = viewportSize.h;
-    const particles: SilkParticle[] = [];
-    for (let i = 0; i < 35; i++) {
-      particles.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: 1 + Math.random() * 1.5,
-        alpha: 0.15 + Math.random() * 0.3
-      });
-    }
-    silkDustRef.current = particles;
-  }, [viewportSize]);
-
-  // Compute node positions on the 16-spoke x 14-ring spider web
-  const nodePositions = useMemo(() => {
-    const cx = viewportSize.w / 2;
-    const cy = viewportSize.h / 2 - 10;
-    const maxRadius = Math.min(cx, cy) * 0.88;
-
-    const map: Record<string, { x: number; y: number }> = {};
-
-    ALL_SKILLS.forEach((skill) => {
-      const spokeIdx = skill.spoke % TOTAL_SPOKES;
-      const angle = SPOKE_ANGLES[spokeIdx];
-      const stretch = SPOKE_STRETCH[spokeIdx];
-
-      const radius = getExponentialRingRadius(skill.ring, maxRadius, spokeIdx) * stretch;
-
-      const px = cx + Math.cos(angle) * radius;
-      const py = cy + Math.sin(angle) * radius;
-
-      map[skill.id] = { x: px, y: py };
-    });
-
-    return map;
-  }, [viewportSize]);
-
-  const activeSkill = useMemo(() => {
-    return ALL_SKILLS.find((s) => s.id === hoveredSkillId) || null;
-  }, [hoveredSkillId]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hubRef = useRef<HTMLButtonElement>(null);
+  const labelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const engineRef = useRef<Engine>({
+    model: null,
+    spider: null,
+    brush: { x: 0, y: 0, vx: 0, vy: 0, on: false },
+    lightX: 0.5,
+    W: 0,
+    H: 0,
+  });
 
   const activeSet = useMemo(() => {
     const set = new Set<string>();
-
-    if (hoveredSkillId) {
-      set.add(hoveredSkillId);
-      const node = ALL_SKILLS.find((s) => s.id === hoveredSkillId);
-      if (node) {
-        node.relatedIds.forEach((rid) => set.add(rid));
-        ALL_SKILLS.forEach((other) => {
-          if (other.relatedIds.includes(hoveredSkillId)) {
-            set.add(other.id);
-          }
-        });
-      }
+    if (hoveredId) {
+      set.add(hoveredId);
+      SKILL_BY_ID[hoveredId]?.relatedIds.forEach((rid) => SKILL_BY_ID[rid] && set.add(rid));
+      ALL_SKILLS.forEach((other) => {
+        if (other.relatedIds.includes(hoveredId)) set.add(other.id);
+      });
     } else if (activeCategory !== "ALL") {
-      ALL_SKILLS.forEach((s) => {
-        if (s.category === activeCategory) {
-          set.add(s.id);
-        }
-      });
+      ALL_SKILLS.forEach((s) => s.category === activeCategory && set.add(s.id));
     }
-
     return set;
-  }, [hoveredSkillId, activeCategory]);
+  }, [hoveredId, activeCategory]);
 
-  // Advanced Canvas Render Engine — Elastic Web Physics & Bioluminescent Energy Pulses
+  const selRef = useRef({ hovered: hoveredId, category: activeCategory, activeSet });
   useEffect(() => {
+    selRef.current = { hovered: hoveredId, category: activeCategory, activeSet };
+  }, [hoveredId, activeCategory, activeSet]);
+
+  const activeSkill = hoveredId ? SKILL_BY_ID[hoveredId] ?? null : null;
+  const focus = hoveredId !== null || activeCategory !== "ALL";
+
+  /* ─── Render loop ─────────────────────────────────────────────────────── */
+  useEffect(() => {
+    const viewport = viewportRef.current;
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const ctx = canvas?.getContext("2d");
+    if (!viewport || !canvas || !ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const W = viewportSize.w;
-    const H = viewportSize.h;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const eng = engineRef.current;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const labelSize: Record<string, { w: number; h: number }> = {};
+    const labelPos: Record<string, { x: number; y: number; shown: boolean }> = {};
+    const beadLevel = new Float32Array(ALL_SKILLS.length).fill(1);
+    let paths: LitPath[] = [];
+    let pathKey = "";
+    let dimMul = 1;
+    let raf = 0;
+    let visible = true;
+    let needsResize = true;
+    let last = performance.now();
+    let t = 0;
+    let dpr = 1;
 
-    let rafId: number;
-    let time = 0;
+    const nodeIndex = (s: SkillNode) => eng.model!.grid[s.spoke % SPOKES][s.ring];
 
-    const cx = W / 2;
-    const cy = H / 2 - 10;
-    const maxRadius = Math.min(cx, cy) * 0.88;
+    const measure = () => {
+      ALL_SKILLS.forEach((s) => {
+        const el = labelRefs.current[s.id];
+        if (el) labelSize[s.id] = { w: el.offsetWidth, h: el.offsetHeight };
+      });
+    };
 
-    const anchorPoints = [
-      { x: 30, y: 30 },
-      { x: W - 30, y: 30 },
-      { x: W - 30, y: H - 30 },
-      { x: 30, y: H - 30 },
-      { x: W / 2, y: 10 },
-      { x: W / 2, y: H - 10 },
-      { x: 10, y: H / 2 },
-      { x: W - 10, y: H / 2 }
-    ];
+    const resize = () => {
+      const rect = viewport.getBoundingClientRect();
+      const W = Math.max(1, Math.round(rect.width));
+      const H = Math.max(1, Math.round(rect.height));
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      eng.W = W;
+      eng.H = H;
+      eng.model = buildWeb(W, H, bottomReserveFor(W));
+      const hub = eng.model.points[eng.model.hub];
+      eng.spider = new Spider(hub.x, hub.y, eng.model.scale);
+      paths = [];
+      pathKey = "";
+      measure();
+    };
 
-    const render = () => {
-      time += 0.012;
-      ctx.clearRect(0, 0, W, H);
+    const ro = new ResizeObserver(() => {
+      needsResize = true;
+    });
+    ro.observe(viewport);
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+    });
+    io.observe(viewport);
+    document.fonts?.ready.then(measure).catch(() => {});
 
-      const isHoveredState = hoveredSkillId !== null || activeCategory !== "ALL";
+    const syncPaths = () => {
+      const m = eng.model!;
+      const { hovered, category, activeSet: lit } = selRef.current;
+      const key = hovered ? `h:${hovered}` : category !== "ALL" ? `c:${category}` : "";
+      if (key === pathKey) return;
+      pathKey = key;
+      paths.forEach((p) => (p.dying = true));
+      if (!key) return;
 
-      // 0. Render Background Silk Dust Particles
-      const particles = silkDustRef.current;
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
+      let src: number;
+      let targets: SkillNode[];
+      if (hovered) {
+        src = nodeIndex(SKILL_BY_ID[hovered]);
+        targets = ALL_SKILLS.filter((s) => s.id !== hovered && lit.has(s.id));
+        // a little tremor at the touched knot
+        const a = Math.random() * Math.PI * 2;
+        pluck(m, src, Math.cos(a), Math.sin(a), 2.2 * m.scale);
+      } else {
+        src = m.hub;
+        targets = ALL_SKILLS.filter((s) => s.category === category);
+      }
+      const prev = shortestPaths(m, src);
+      targets.forEach((s, i) => {
+        const path = tracePath(prev, src, nodeIndex(s));
+        if (path.length > 1) paths.push({ path, born: t, alpha: 0, dying: false, phase: i * 0.137 });
+      });
+    };
 
-        if (p.x < 0) p.x = W;
-        if (p.x > W) p.x = 0;
-        if (p.y < 0) p.y = H;
-        if (p.y > H) p.y = 0;
+    const layoutLabels = () => {
+      const m = eng.model!;
+      const { hovered, category, activeSet: lit } = selRef.current;
+      const isFocus = hovered !== null || category !== "ALL";
+      const hub = m.points[m.hub];
+      const W = eng.W;
+      const maxY = eng.H - 10;
+      const gap = 11 * Math.max(0.8, m.scale);
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(217, 119, 6, ${p.alpha * 0.5})`;
-        ctx.fill();
+      const items = ALL_SKILLS.map((s) => {
+        const p = m.points[nodeIndex(s)];
+        const size = labelSize[s.id] ?? { w: 120, h: 26 };
+        const side = p.x >= hub.x ? 1 : -1;
+        let x = side > 0 ? p.x + gap : p.x - gap - size.w;
+        x = Math.max(8, Math.min(W - size.w - 8, x));
+        const y = p.y - size.h / 2;
+        return { s, p, x, y, w: size.w, h: size.h, shown: isFocus && lit.has(s.id) };
       });
 
-      // 1. Draw Outer Anchor Guy-Lines
-      anchorPoints.forEach((ap, idx) => {
-        const spokeAngle = SPOKE_ANGLES[(idx * 2) % TOTAL_SPOKES];
-        const stretch = SPOKE_STRETCH[(idx * 2) % TOTAL_SPOKES];
-        const endX = cx + Math.cos(spokeAngle) * maxRadius * stretch;
-        const endY = cy + Math.sin(spokeAngle) * maxRadius * stretch;
-
-        // Interactive Tug Deflection
-        const mdx = (ap.x + endX) / 2 - mousePosRef.current.x;
-        const mdy = (ap.y + endY) / 2 - mousePosRef.current.y;
-        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        const tug = mdist < 100 ? (100 - mdist) * 0.12 : 0;
-        const tugX = mdist > 0 ? (mdx / mdist) * tug : 0;
-        const tugY = mdist > 0 ? (mdy / mdist) * tug : 0;
-
-        ctx.beginPath();
-        ctx.moveTo(ap.x, ap.y);
-        ctx.quadraticCurveTo((ap.x + endX) / 2 + tugX, (ap.y + endY) / 2 + tugY, endX, endY);
-        ctx.lineWidth = 0.85;
-        ctx.strokeStyle = "rgba(180, 185, 200, 0.18)";
-        ctx.stroke();
-      });
-
-      // 2. Draw 16 Curved Elastic Radial Spokes
-      for (let s = 0; s < TOTAL_SPOKES; s++) {
-        const angle = SPOKE_ANGLES[s];
-        const stretch = SPOKE_STRETCH[s];
-        const endX = cx + Math.cos(angle) * maxRadius * stretch;
-        const endY = cy + Math.sin(angle) * maxRadius * stretch;
-
-        // Interactive Mouse Tug Physics
-        const midPointX = (cx + endX) / 2;
-        const midPointY = (cy + endY) / 2;
-        const mdx = midPointX - mousePosRef.current.x;
-        const mdy = midPointY - mousePosRef.current.y;
-        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        const tug = mdist < 120 ? (120 - mdist) * 0.18 : 0;
-        const tugX = mdist > 0 ? (mdx / mdist) * tug : 0;
-        const tugY = mdist > 0 ? (mdy / mdist) * tug : 0;
-
-        const bowing = Math.sin(s * 1.5) * 10;
-        const midX = midPointX + Math.sin(angle) * bowing + tugX;
-        const midY = midPointY - Math.cos(angle) * bowing + tugY;
-
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.quadraticCurveTo(midX, midY, endX, endY);
-
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = isHoveredState ? "rgba(160, 165, 180, 0.12)" : "rgba(200, 205, 220, 0.32)";
-        ctx.stroke();
-      }
-
-      // 3. Draw 14 Exponential Catenary Web Rings with Elastic Tension
-      for (let r = 1; r <= TOTAL_RINGS; r++) {
-        const breath = Math.sin(time * 1.5 + r) * 0.9;
-
-        ctx.beginPath();
-        for (let s = 0; s < TOTAL_SPOKES; s++) {
-          const a1 = SPOKE_ANGLES[s];
-          const a2 = SPOKE_ANGLES[(s + 1) % TOTAL_SPOKES];
-          const st1 = SPOKE_STRETCH[s];
-          const st2 = SPOKE_STRETCH[(s + 1) % TOTAL_SPOKES];
-
-          const radius1 = getExponentialRingRadius(r, maxRadius, s) * st1 + breath;
-          const radius2 = getExponentialRingRadius(r, maxRadius, (s + 1) % TOTAL_SPOKES) * st2 + breath;
-
-          const x1 = cx + Math.cos(a1) * radius1;
-          const y1 = cy + Math.sin(a1) * radius1;
-          const x2 = cx + Math.cos(a2) * radius2;
-          const y2 = cy + Math.sin(a2) * radius2;
-
-          const midA = (a1 + a2) / 2;
-          const sagRatio = 0.93 - (r * 0.005);
-          const midR = ((radius1 + radius2) / 2) * sagRatio;
-
-          // Mouse Tug Deflection on Web Ring Segments
-          const baseMidX = cx + Math.cos(midA) * midR;
-          const baseMidY = cy + Math.sin(midA) * midR;
-          const mdx = baseMidX - mousePosRef.current.x;
-          const mdy = baseMidY - mousePosRef.current.y;
-          const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-          const tug = mdist < 100 ? (100 - mdist) * 0.14 : 0;
-          const tugX = mdist > 0 ? (mdx / mdist) * tug : 0;
-          const tugY = mdist > 0 ? (mdy / mdist) * tug : 0;
-
-          const midX = baseMidX + tugX;
-          const midY = baseMidY + tugY;
-
-          if (s === 0) ctx.moveTo(x1, y1);
-          ctx.quadraticCurveTo(midX, midY, x2, y2);
-        }
-
-        ctx.lineWidth = r <= 3 ? 1.25 : 0.95;
-        ctx.strokeStyle = isHoveredState ? "rgba(150, 155, 170, 0.1)" : "rgba(190, 195, 210, 0.28)";
-        ctx.stroke();
-      }
-
-      // 4. Smooth Lerp & Energy Pulses Along Connected Strands (Bioluminescent Amber Gold Silk)
-      ALL_SKILLS.forEach((skill) => {
-        const p1 = nodePositions[skill.id];
-        if (!p1) return;
-
-        const isSkillLit = activeSet.has(skill.id);
-
-        skill.relatedIds.forEach((rid) => {
-          const p2 = nodePositions[rid];
-          if (!p2) return;
-
-          const isRelLit = activeSet.has(rid);
-          const edgeKey = [skill.id, rid].sort().join("--");
-          const currentProgress = animatedLineProgressRef.current[edgeKey] || 0;
-
-          const targetProgress = (isHoveredState && isSkillLit && isRelLit) ? 1.0 : 0.0;
-          const nextProgress = lerp(currentProgress, targetProgress, 0.12);
-          animatedLineProgressRef.current[edgeKey] = nextProgress;
-
-          if (nextProgress > 0.01) {
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-
-            const isHoveredNode = skill.id === hoveredSkillId || rid === hoveredSkillId;
-            ctx.lineWidth = 1.2 + nextProgress * (isHoveredNode ? 1.4 : 0.7);
-
-            const alpha = nextProgress * (isHoveredNode ? 0.95 : 0.7);
-            ctx.strokeStyle = `rgba(245, 158, 11, ${alpha})`;
-            ctx.shadowColor = "#f59e0b";
-            ctx.shadowBlur = nextProgress * (isHoveredNode ? 12 : 6);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            // Shooting Bioluminescent Energy Pulse Particle along Active Web Strand
-            if (isHoveredNode && nextProgress > 0.5) {
-              const pulsePos = (time * 1.5) % 1;
-              const px = lerp(p1.x, p2.x, pulsePos);
-              const py = lerp(p1.y, p2.y, pulsePos);
-
-              ctx.beginPath();
-              ctx.arc(px, py, 3, 0, Math.PI * 2);
-              ctx.fillStyle = "#ffffff";
-              ctx.shadowColor = "#f59e0b";
-              ctx.shadowBlur = 10;
-              ctx.fill();
-              ctx.shadowBlur = 0;
+      // Resolve overlaps between visible labels by nudging them apart vertically.
+      const shown = items.filter((it) => it.shown);
+      for (let iter = 0; iter < 10; iter++) {
+        let moved = false;
+        for (let i = 0; i < shown.length; i++) {
+          for (let j = i + 1; j < shown.length; j++) {
+            const a = shown[i];
+            const b = shown[j];
+            const pad = 4;
+            const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) + pad;
+            const oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) + pad;
+            if (ox > 0 && oy > 0) {
+              const push = oy / 2;
+              if (a.p.y <= b.p.y) {
+                a.y -= push;
+                b.y += push;
+              } else {
+                a.y += push;
+                b.y -= push;
+              }
+              moved = true;
             }
           }
-        });
-      });
-
-      // 5. Smooth Interpolation for Web Intersection Knot Dots
-      ALL_SKILLS.forEach((skill) => {
-        const pos = nodePositions[skill.id];
-        if (!pos) return;
-
-        const isLit = activeSet.has(skill.id);
-        const isActive = skill.id === hoveredSkillId;
-
-        const key = skill.id;
-        const currentProgress = animatedOpacitiesRef.current[key] || 0;
-        const targetProgress = isActive ? 1.0 : isLit ? 0.6 : 0.0;
-        const nextProgress = lerp(currentProgress, targetProgress, 0.15);
-        animatedOpacitiesRef.current[key] = nextProgress;
-
-        const r = 2.5 + nextProgress * 2.5;
-
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
-
-        if (nextProgress > 0.1) {
-          ctx.fillStyle = `rgba(245, 158, 11, ${0.4 + nextProgress * 0.6})`;
-          ctx.shadowColor = "#f59e0b";
-          ctx.shadowBlur = nextProgress * 12;
-        } else {
-          ctx.fillStyle = "rgba(210, 215, 230, 0.5)";
-          ctx.shadowBlur = 0;
         }
+        shown.forEach((it) => (it.y = Math.max(8, Math.min(maxY - it.h, it.y))));
+        if (!moved) break;
+      }
 
-        ctx.fill();
-        ctx.shadowBlur = 0;
+      // Leader lines for labels that were displaced from their knot.
+      ctx.save();
+      ctx.lineWidth = 0.8;
+      items.forEach((it) => {
+        const prev = labelPos[it.s.id];
+        const pos = prev && prev.shown && it.shown ? prev : { x: it.x, y: it.y, shown: it.shown };
+        pos.x += (it.x - pos.x) * 0.35;
+        pos.y += (it.y - pos.y) * 0.35;
+        pos.shown = it.shown;
+        labelPos[it.s.id] = pos;
+
+        const el = labelRefs.current[it.s.id];
+        if (el) el.style.transform = `translate3d(${pos.x.toFixed(1)}px, ${pos.y.toFixed(1)}px, 0)`;
+
+        if (it.shown) {
+          const cy = pos.y + it.h / 2;
+          const ex = pos.x + it.w / 2 < it.p.x ? pos.x + it.w : pos.x;
+          if (Math.abs(cy - it.p.y) > 5 || Math.abs(ex - it.p.x) > gap + 4) {
+            ctx.beginPath();
+            ctx.moveTo(it.p.x, it.p.y);
+            ctx.lineTo(ex, cy);
+            ctx.strokeStyle = "rgba(245,190,120,0.35)";
+            ctx.stroke();
+          }
+        }
       });
-
-      rafId = requestAnimationFrame(render);
+      ctx.restore();
     };
 
-    render();
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (needsResize) {
+        needsResize = false;
+        resize();
+      }
+      const m = eng.model;
+      const spider = eng.spider;
+      if (!visible || !m || !spider) {
+        last = now;
+        return;
+      }
+
+      const elapsed = Math.min(64, now - last);
+      last = now;
+      const steps = Math.max(1, Math.min(3, Math.round(elapsed / 16.67)));
+      for (let i = 0; i < steps; i++) {
+        t += 1 / 60;
+        stepWeb(m, t, reduceMotion ? 0 : 1, eng.brush);
+      }
+      eng.brush.vx *= 0.55;
+      eng.brush.vy *= 0.55;
+
+      const { hovered, category, activeSet: lit } = selRef.current;
+      const isFocus = hovered !== null || category !== "ALL";
+      dimMul += ((isFocus ? 0.55 : 1) - dimMul) * 0.08;
+      const light = -0.8 + (eng.lightX - 0.5) * 1.2 + (reduceMotion ? 0 : Math.sin(t * 0.12) * 0.28);
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, eng.W, eng.H);
+
+      renderSilk(ctx, m, light, dimMul);
+      renderDew(ctx, m, light, dimMul);
+
+      syncPaths();
+      paths = paths.filter((p) => !(p.dying && p.alpha < 0.01));
+      paths.forEach((p) => {
+        p.alpha += ((p.dying ? 0 : 1) - p.alpha) * (p.dying ? 0.15 : 0.12);
+        const reveal = p.dying ? 1 : Math.min(1, (t - p.born) * 2.2);
+        renderPath(ctx, m, p.path, reveal, p.alpha, t, p.phase);
+      });
+
+      layoutLabels();
+
+      ALL_SKILLS.forEach((s, i) => {
+        const target = s.id === hovered ? 3 : lit.has(s.id) ? 2 : isFocus ? 0.4 : 1;
+        beadLevel[i] += (target - beadLevel[i]) * 0.14;
+        const p = m.points[nodeIndex(s)];
+        renderBead(ctx, p.x, p.y, beadLevel[i], t, i, m.scale);
+      });
+
+      const faceTo = hovered ? m.points[nodeIndex(SKILL_BY_ID[hovered])] : null;
+      spider.update(m, now, faceTo, reduceMotion);
+      spider.draw(ctx, m);
+
+      const hub = m.points[m.hub];
+      if (hubRef.current) {
+        hubRef.current.style.transform = `translate3d(${(hub.x - 22).toFixed(1)}px, ${(hub.y - 22).toFixed(1)}px, 0)`;
+      }
+    };
+    raf = requestAnimationFrame(frame);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
     };
-  }, [viewportSize, hoveredSkillId, activeCategory, activeSet, nodePositions]);
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!viewportRef.current) return;
-    const rect = viewportRef.current.getBoundingClientRect();
-    mousePosRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
+  /* ─── Pointer interaction ─────────────────────────────────────────────── */
+  const localPoint = (e: React.PointerEvent) => {
+    const r = viewportRef.current!.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
 
-  const handleMouseLeave = () => {
-    mousePosRef.current = { x: -9999, y: -9999 };
-    setHoveredSkillId(null);
+  const isUiTarget = (target: EventTarget) =>
+    target instanceof Element && !!target.closest(".sw-card, .sw-label, .sw-hub");
+
+  const findSkillNear = useCallback((x: number, y: number, radius: number) => {
+    const m = engineRef.current.model;
+    if (!m) return null;
+    let best: string | null = null;
+    let bestD = radius * radius;
+    ALL_SKILLS.forEach((s) => {
+      const p = m.points[m.grid[s.spoke % SPOKES][s.ring]];
+      const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = s.id;
+      }
+    });
+    return best;
+  }, []);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const eng = engineRef.current;
+    const { x, y } = localPoint(e);
+    const b = eng.brush;
+    if (b.on) {
+      b.vx = Math.max(-24, Math.min(24, x - b.x));
+      b.vy = Math.max(-24, Math.min(24, y - b.y));
+    }
+    b.x = x;
+    b.y = y;
+    b.on = e.pointerType === "mouse";
+    eng.lightX = eng.W ? x / eng.W : 0.5;
+
+    if (e.pointerType === "mouse" && !isUiTarget(e.target)) {
+      const near = findSkillNear(x, y, 22);
+      if (viewportRef.current) viewportRef.current.style.cursor = near ? "pointer" : "";
+      if (near && near !== selRef.current.hovered) setHoveredId(near);
+    }
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
+    const eng = engineRef.current;
+    eng.brush.on = false;
+    eng.lightX = 0.5;
+    if (e.pointerType === "mouse") setHoveredId(null);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isUiTarget(e.target)) return;
+    const eng = engineRef.current;
+    const m = eng.model;
+    if (!m) return;
+    const { x, y } = localPoint(e);
+    const near = findSkillNear(x, y, e.pointerType === "mouse" ? 22 : 30);
+    if (near) {
+      setHoveredId(near);
+      return;
+    }
+    const idx = nearestPoint(m, x, y, 40 * Math.max(0.8, m.scale));
+    if (idx >= 0 && idx !== m.hub) {
+      const p = m.points[idx];
+      const hub = m.points[m.hub];
+      const a = Math.atan2(p.y - hub.y, p.x - hub.x) + Math.PI / 2;
+      pluck(m, idx, Math.cos(a), Math.sin(a), 9 * m.scale);
+      eng.spider?.hunt(idx);
+    } else if (e.pointerType !== "mouse") {
+      setHoveredId(null);
+    }
+  };
+
+  const resetView = () => {
+    setHoveredId(null);
+    setActiveCategory("ALL");
   };
 
   return (
-    <div className="spiderman-web-section">
-      {/* Background Mesh */}
-      <div className="spiderman-web-bg-overlay" />
+    <div className="sw-section">
+      <div className="sw-bg" aria-hidden />
 
-      {/* Top Header & Category Filter Controls */}
-      <div className="spider-top-panel">
-        <div className="spider-header-row">
-          <div className="spider-title-box">
-            <div className="spider-icon-badge">
-              <GiSpiderWeb size={20} />
-            </div>
-            <div>
-              <h4 className="spider-main-title">Interactive Skill Web</h4>
-              <p className="spider-main-subtitle">Explore technical expertise & interdisciplinary connections</p>
-            </div>
-          </div>
-
-          <div className="spider-status-pill">
-            <span>WEB MATRIX // ACTIVE</span>
-          </div>
+      <header className="sw-header">
+        <div className="sw-title-wrap">
+          <span className="sw-eyebrow">
+            <GiSpiderWeb aria-hidden /> Skill Web
+          </span>
+          <h3 className="sw-title">Everything I build with, woven together.</h3>
+          <p className="sw-sub">
+            Hover a glowing knot to trace its connections through the silk. Click a thread to pluck it.
+          </p>
         </div>
+        <dl className="sw-stats">
+          <div>
+            <dt>Skills</dt>
+            <dd>{ALL_SKILLS.length}</dd>
+          </div>
+          <div>
+            <dt>Domains</dt>
+            <dd>{CATEGORIES.length - 1}</dd>
+          </div>
+        </dl>
+      </header>
 
-        {/* Category Pills */}
-        <div className="spider-category-bar">
-          {CATEGORIES.map((cat) => (
+      <nav className="sw-filters" aria-label="Filter skills by domain">
+        {CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat;
+          return (
             <button
               key={cat}
-              className={`spider-cat-btn ${activeCategory === cat ? "active" : ""}`}
-              onClick={() => setActiveCategory(cat)}
+              type="button"
+              className={`sw-filter ${isActive ? "is-active" : ""}`}
+              aria-pressed={isActive}
+              onClick={() => {
+                setHoveredId(null);
+                setActiveCategory(isActive && cat !== "ALL" ? "ALL" : cat);
+              }}
             >
-              {cat === "ALL" && <GiSpiderWeb size={13} />}
-              {cat}
+              {cat === "ALL" ? "All skills" : cat}
+              <span className="sw-filter-count">{cat === "ALL" ? ALL_SKILLS.length : CATEGORY_COUNTS[cat] ?? 0}</span>
             </button>
-          ))}
-        </div>
-      </div>
+          );
+        })}
+      </nav>
 
-      {/* Main Canvas Viewport Area */}
       <div
         ref={viewportRef}
-        className="spider-canvas-viewport"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        className="sw-viewport"
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
+        onPointerDown={handlePointerDown}
       >
-        <canvas ref={canvasRef} className="spider-web-canvas" />
+        <canvas ref={canvasRef} className="sw-canvas" aria-hidden />
 
-        {/* Center Spider Core Node with Radar Senses Aura */}
-        <div
-          className="center-spider-hub"
-          onClick={() => {
-            setHoveredSkillId(null);
-            setActiveCategory("ALL");
-          }}
-          title="Spider Hub — Reset View"
-        >
-          <FaSpider size={28} />
-        </div>
+        <button ref={hubRef} type="button" className="sw-hub" onClick={resetView} aria-label="Reset skill web" title="Reset view" />
 
-        {/* HTML Skill Nodes Layer */}
-        <div className="spider-nodes-layer">
+        <div className="sw-labels">
           {ALL_SKILLS.map((skill) => {
-            const pos = nodePositions[skill.id];
-            if (!pos) return null;
-
-            const isActive = skill.id === hoveredSkillId;
-            const isRelated = !isActive && activeSet.has(skill.id);
-            const isCategoryMatch = activeCategory !== "ALL" && skill.category === activeCategory;
-            const isLit = isActive || isRelated || isCategoryMatch;
-
-            const isHoveringAny = hoveredSkillId !== null || activeCategory !== "ALL";
-
-            let nodeClass = "spider-node-item";
-            if (!isHoveringAny) {
-              nodeClass += " is-hidden-default";
-            } else if (isActive) {
-              nodeClass += " is-active";
-            } else if (isLit) {
-              nodeClass += " is-related";
-            } else {
-              nodeClass += " is-dimmed";
-            }
-
+            const isActive = skill.id === hoveredId;
+            const lit = focus && activeSet.has(skill.id);
             return (
-              <div
+              <button
                 key={skill.id}
-                className={nodeClass}
-                style={{
-                  left: `${pos.x}px`,
-                  top: `${pos.y}px`
+                ref={(el) => {
+                  labelRefs.current[skill.id] = el;
                 }}
-                onMouseEnter={() => setHoveredSkillId(skill.id)}
+                type="button"
+                className={`sw-label${lit ? " is-visible" : ""}${isActive ? " is-active" : lit ? " is-related" : ""}`}
+                onMouseEnter={() => setHoveredId(skill.id)}
+                onFocus={() => setHoveredId(skill.id)}
+                onClick={() => setHoveredId(skill.id)}
+                aria-label={`${skill.name}, ${skill.category}`}
               >
-                <div className="spider-node-badge">
-                  <span className="spider-node-icon">{skill.icon}</span>
-                  <span>{skill.name}</span>
-                </div>
-              </div>
+                <span className="sw-label-icon" aria-hidden>
+                  {skill.icon}
+                </span>
+                <span>{skill.name}</span>
+              </button>
             );
           })}
         </div>
 
-        {/* Floating Detail Card (Bottom Overlay with Clickable Navigation) */}
         {activeSkill ? (
-          <div className="spider-hud-card">
-            <div className="spider-hud-card-header">
-              <div className="spider-hud-card-title-group">
-                <div className="spider-hud-card-icon">{activeSkill.icon}</div>
-                <h3 className="spider-hud-card-name">{activeSkill.name}</h3>
+          <div className="sw-card" key={activeSkill.id} role="status">
+            <div className="sw-card-head">
+              <div className="sw-card-icon" aria-hidden>
+                {activeSkill.icon}
               </div>
-              <span className="spider-hud-card-cat">{activeSkill.category}</span>
+              <div className="sw-card-heading">
+                <span className="sw-card-cat">{activeSkill.category}</span>
+                <h4 className="sw-card-name">{activeSkill.name}</h4>
+              </div>
             </div>
-
-            <p className="spider-hud-card-desc">{activeSkill.description}</p>
-
-            <div className="spider-hud-related-tags">
-              <span className="related-tag-label">
-                <GiSparkles size={11} style={{ display: 'inline', marginRight: 4, color: '#f59e0b' }} />
-                {activeSkill.relatedIds.length} Connected Nodes (Click to Jump):
-              </span>
-              {activeSkill.relatedIds.map((rid) => {
-                const relNode = ALL_SKILLS.find((s) => s.id === rid);
-                return relNode ? (
-                  <span
-                    key={rid}
-                    className="related-tag-pill clickable-pill"
-                    onClick={() => setHoveredSkillId(rid)}
-                    title={`Jump to ${relNode.name}`}
-                  >
-                    {relNode.name}
-                  </span>
-                ) : null;
-              })}
+            <p className="sw-card-desc">{activeSkill.description}</p>
+            <div className="sw-card-links">
+              <span className="sw-card-links-label">Connected</span>
+              {activeSkill.relatedIds
+                .filter((rid) => SKILL_BY_ID[rid])
+                .map((rid) => (
+                  <button key={rid} type="button" className="sw-chip" onClick={() => setHoveredId(rid)}>
+                    {SKILL_BY_ID[rid].name}
+                  </button>
+                ))}
             </div>
           </div>
         ) : (
-          <div className="spider-web-hint">
-            <GiSpiderWeb size={16} color="#d97706" />
-            <span>Hover over any web node or category to activate skill sensors</span>
+          <div className="sw-hint">
+            <span className="sw-hint-dot" aria-hidden />
+            {activeCategory === "ALL"
+              ? "Hover a glowing knot · click the silk to pluck it"
+              : `${CATEGORY_COUNTS[activeCategory] ?? 0} skills in ${activeCategory} · hover one to see its links`}
           </div>
         )}
       </div>
